@@ -1,0 +1,127 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="55%" r="58%">
+      <stop offset="0%" stop-color="#0a1a3a"/>
+      <stop offset="60%" stop-color="#060d1e"/>
+      <stop offset="100%" stop-color="#030810"/>
+    </radialGradient>
+    <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4ecdc4" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#4ecdc4" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#c5a8ff" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#c5a8ff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="gf" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+    <filter id="gf2" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+    <linearGradient id="tail" x1="20%" y1="10%" x2="85%" y2="95%">
+      <stop offset="0%" stop-color="#78d8f0"/>
+      <stop offset="40%" stop-color="#4ecdc4"/>
+      <stop offset="100%" stop-color="#2a7fa8"/>
+    </linearGradient>
+    <linearGradient id="tailSheen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="60%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="moon" x1="20%" y1="10%" x2="80%" y2="90%">
+      <stop offset="0%" stop-color="#e8d4ff"/>
+      <stop offset="100%" stop-color="#c5a8ff"/>
+    </linearGradient>
+    <linearGradient id="wave" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4ecdc4" stop-opacity="0"/>
+      <stop offset="30%" stop-color="#4ecdc4" stop-opacity="0.55"/>
+      <stop offset="70%" stop-color="#78b4ff" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#78b4ff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+
+  <!-- Subtle purple ambient glow top-left -->
+  <ellipse cx="160" cy="150" rx="180" ry="150" fill="url(#glow2)" filter="url(#gf2)"/>
+
+  <!-- Cyan ambient glow bottom-right -->
+  <ellipse cx="360" cy="360" rx="160" ry="130" fill="url(#glow1)" filter="url(#gf2)"/>
+
+  <!-- Moon circle (crescent effect using two circles) -->
+  <circle cx="148" cy="128" r="52" fill="url(#moon)" opacity="0.78"/>
+  <circle cx="165" cy="118" r="44" fill="#060d1e" opacity="0.92"/>
+
+  <!-- Moon soft glow -->
+  <circle cx="148" cy="128" r="52" fill="#c5a8ff" opacity="0.08" filter="url(#gf)"/>
+
+  <!-- Whale tail — main body -->
+  <!-- Left fluke -->
+  <path d="M 96 330
+           C 68 290 60 260 80 238
+           C 96 220 118 224 132 242
+           C 145 258 148 278 146 302
+           L 200 288
+           C 196 262 192 228 204 200
+           C 216 172 238 158 256 160
+           C 274 158 296 172 308 200
+           C 320 228 316 262 312 288
+           L 366 302
+           C 364 278 367 258 380 242
+           C 394 224 416 220 432 238
+           C 452 260 444 290 416 330
+           C 396 355 370 368 344 362
+           C 318 356 296 338 282 316
+           C 272 300 264 294 256 294
+           C 248 294 240 300 230 316
+           C 216 338 194 356 168 362
+           C 142 368 116 355 96 330 Z"
+        fill="url(#tail)"/>
+
+  <!-- Tail sheen overlay -->
+  <path d="M 96 330
+           C 68 290 60 260 80 238
+           C 96 220 118 224 132 242
+           C 145 258 148 278 146 302
+           L 200 288
+           C 196 262 192 228 204 200
+           C 216 172 238 158 256 160
+           C 274 158 296 172 308 200
+           C 320 228 316 262 312 288
+           L 366 302
+           C 364 278 367 258 380 242
+           C 394 224 416 220 432 238
+           C 452 260 444 290 416 330
+           C 396 355 370 368 344 362
+           C 318 356 296 338 282 316
+           C 272 300 264 294 256 294
+           C 248 294 240 300 230 316
+           C 216 338 194 356 168 362
+           C 142 368 116 355 96 330 Z"
+        fill="url(#tailSheen)"/>
+
+  <!-- Glow under tail -->
+  <path d="M 120 340 C 180 380 260 385 256 385 C 252 385 332 380 392 340"
+        stroke="#4ecdc4" stroke-width="2" stroke-opacity="0.3" fill="none" filter="url(#gf)"/>
+
+  <!-- Water line waves -->
+  <path d="M 60 400 C 110 390 150 408 200 400 C 250 392 290 410 340 400 C 385 390 430 408 460 398"
+        stroke="url(#wave)" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.65"/>
+  <path d="M 80 418 C 125 408 162 424 210 416 C 258 408 300 426 348 416 C 392 406 428 422 455 414"
+        stroke="url(#wave)" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.38"/>
+
+  <!-- Small glowing dots (bioluminescence) -->
+  <circle cx="108" cy="370" r="3.5" fill="#4ecdc4" opacity="0.7"/>
+  <circle cx="108" cy="370" r="7" fill="#4ecdc4" opacity="0.2" filter="url(#gf)"/>
+
+  <circle cx="390" cy="365" r="3" fill="#78d8f0" opacity="0.65"/>
+  <circle cx="390" cy="365" r="6" fill="#78d8f0" opacity="0.18" filter="url(#gf)"/>
+
+  <circle cx="256" cy="450" r="2.5" fill="#c5a8ff" opacity="0.6"/>
+  <circle cx="320" cy="440" r="2" fill="#4ecdc4" opacity="0.5"/>
+  <circle cx="192" cy="442" r="2" fill="#78b4ff" opacity="0.5"/>
+
+  <!-- Tail center glow -->
+  <ellipse cx="256" cy="295" rx="30" ry="18" fill="#4ecdc4" opacity="0.12" filter="url(#gf)"/>
+</svg>

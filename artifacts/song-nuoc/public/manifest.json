@@ -1,0 +1,19 @@
+{
+  "id": "/ocean-v2"
+  "name": "Ocean — Sóng nước của Đại Dương",
+  "short_name": "Ocean",
+  "description": "văn, lời thi ca tồi tàn của nghệ nhân thoi thóp.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030810",
+  "theme_color": "#060d1e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
