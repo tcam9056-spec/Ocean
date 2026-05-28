@@ -1,6 +1,5 @@
-import { useState, useCallback } from "react";
-
-const STORAGE_KEY = "ocean_shelves_v2";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 
 export interface Artwork {
   id: string;
@@ -18,39 +17,15 @@ export interface Shelf {
   createdAt: number;
 }
 
-function uid(): string {
-  return `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-}
+const SHELVES_KEY = ["shelves"] as const;
 
-export function loadShelves(): Shelf[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    // Defensive: ensure every shelf has a valid artworks array
-    return parsed.map((s: Shelf) => ({
-      ...s,
-      artworks: Array.isArray(s.artworks) ? s.artworks.map((a: Artwork) => ({
-        id: a.id ?? uid(),
-        title: a.title ?? "",
-        description: a.description ?? "",
-        link: a.link ?? "",
-        likes: typeof a.likes === "number" ? a.likes : 0,
-        createdAt: a.createdAt ?? Date.now(),
-      })) : [],
-    }));
-  } catch {
-    return [];
-  }
-}
-
-function persist(shelves: Shelf[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(shelves));
-  } catch {
-    // Storage quota exceeded — silently fail
-  }
+async function apiFetch(url: string, options?: RequestInit) {
+  const res = await fetch(url, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...(options?.headers ?? {}) },
+  });
+  if (!res.ok) throw new Error(`API error ${res.status}`);
+  return res.json();
 }
 
 export function computeStats(shelves: Shelf[]) {
@@ -66,114 +41,76 @@ export function computeStats(shelves: Shelf[]) {
 }
 
 export function useShelvesStore() {
-  const [shelves, setShelves] = useState<Shelf[]>(() => loadShelves());
+  const queryClient = useQueryClient();
 
-  const update = useCallback((next: Shelf[]) => {
-    setShelves(next);
-    persist(next);
-  }, []);
+  const { data: shelves = [] } = useQuery<Shelf[]>({
+    queryKey: SHELVES_KEY,
+    queryFn: () => apiFetch("/api/shelves"),
+    staleTime: 10_000,
+  });
 
-  const createShelf = useCallback((name: string): string => {
-    const shelf: Shelf = {
-      id: `shelf_${uid()}`,
-      shelfName: name.trim(),
-      artworks: [],
-      createdAt: Date.now(),
-    };
-    setShelves((prev) => {
-      const next = [...prev, shelf];
-      persist(next);
-      return next;
+  const invalidate = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: SHELVES_KEY });
+  }, [queryClient]);
+
+  const createShelf = useCallback(async (name: string): Promise<string> => {
+    const shelf: Shelf = await apiFetch("/api/shelves", {
+      method: "POST",
+      body: JSON.stringify({ name }),
     });
+    await queryClient.invalidateQueries({ queryKey: SHELVES_KEY });
     return shelf.id;
-  }, []);
+  }, [queryClient]);
 
   const renameShelf = useCallback((id: string, name: string) => {
-    setShelves((prev) => {
-      const next = prev.map((s) => s.id === id ? { ...s, shelfName: name.trim() } : s);
-      persist(next);
-      return next;
-    });
-  }, []);
+    apiFetch(`/api/shelves/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ name }),
+    }).then(invalidate);
+  }, [invalidate]);
 
   const deleteShelf = useCallback((id: string) => {
-    setShelves((prev) => {
-      const next = prev.filter((s) => s.id !== id);
-      persist(next);
-      return next;
-    });
-  }, []);
+    apiFetch(`/api/shelves/${id}`, { method: "DELETE" }).then(invalidate);
+  }, [invalidate]);
 
-  const addArtwork = useCallback((shelfId: string, data: { title: string; description: string; link: string }) => {
-    const artwork: Artwork = {
-      id: `art_${uid()}`,
-      title: data.title.trim(),
-      description: data.description.trim(),
-      link: data.link.trim(),
-      likes: 0,
-      createdAt: Date.now(),
-    };
-    setShelves((prev) => {
-      const next = prev.map((s) =>
-        s.id === shelfId ? { ...s, artworks: [...s.artworks, artwork] } : s
-      );
-      persist(next);
-      return next;
-    });
-  }, []);
+  const addArtwork = useCallback(
+    (shelfId: string, data: { title: string; description: string; link: string }) => {
+      apiFetch(`/api/shelves/${shelfId}/artworks`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }).then(invalidate);
+    },
+    [invalidate]
+  );
 
-  const updateArtwork = useCallback((shelfId: string, artId: string, data: { title: string; description: string; link: string }) => {
-    setShelves((prev) => {
-      const next = prev.map((s) =>
-        s.id === shelfId
-          ? {
-              ...s,
-              artworks: s.artworks.map((a) =>
-                a.id === artId
-                  ? { ...a, title: data.title.trim(), description: data.description.trim(), link: data.link.trim() }
-                  : a
-              ),
-            }
-          : s
-      );
-      persist(next);
-      return next;
-    });
-  }, []);
+  const updateArtwork = useCallback(
+    (shelfId: string, artId: string, data: { title: string; description: string; link: string }) => {
+      apiFetch(`/api/shelves/${shelfId}/artworks/${artId}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }).then(invalidate);
+    },
+    [invalidate]
+  );
 
   const deleteArtwork = useCallback((shelfId: string, artId: string) => {
-    setShelves((prev) => {
-      const next = prev.map((s) =>
-        s.id === shelfId
-          ? { ...s, artworks: s.artworks.filter((a) => a.id !== artId) }
-          : s
-      );
-      persist(next);
-      return next;
-    });
-  }, []);
+    apiFetch(`/api/shelves/${shelfId}/artworks/${artId}`, {
+      method: "DELETE",
+    }).then(invalidate);
+  }, [invalidate]);
 
   const likeArtwork = useCallback((shelfId: string, artId: string) => {
-    setShelves((prev) => {
-      const next = prev.map((s) =>
-        s.id === shelfId
-          ? { ...s, artworks: s.artworks.map((a) => a.id === artId ? { ...a, likes: a.likes + 1 } : a) }
-          : s
-      );
-      persist(next);
-      return next;
-    });
-  }, []);
+    apiFetch(`/api/shelves/${shelfId}/artworks/${artId}/like`, {
+      method: "POST",
+    }).then(invalidate);
+  }, [invalidate]);
 
-  // Sync state if localStorage changes in another tab
   const refresh = useCallback(() => {
-    const fresh = loadShelves();
-    setShelves(fresh);
-  }, []);
+    queryClient.invalidateQueries({ queryKey: SHELVES_KEY });
+  }, [queryClient]);
 
   return {
     shelves,
-    update,
     createShelf,
     renameShelf,
     deleteShelf,

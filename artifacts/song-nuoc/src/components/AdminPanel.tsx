@@ -8,7 +8,7 @@ interface AdminPanelProps {
   isAdmin: boolean;
   setIsAdmin: (v: boolean) => void;
   shelves: Shelf[];
-  onCreateShelf: (name: string) => string;
+  onCreateShelf: (name: string) => Promise<string>;
   onRenameShelf: (id: string, name: string) => void;
   onDeleteShelf: (id: string) => void;
   onAddArtwork: (shelfId: string, data: { title: string; description: string; link: string }) => void;
@@ -560,7 +560,7 @@ function ShelfDetail({ shelf, onBack, onRename, onAdd, onUpdate, onDelete }: She
 interface ShelfListProps {
   shelves: Shelf[];
   onSelectShelf: (id: string) => void;
-  onCreateShelf: (name: string) => string;
+  onCreateShelf: (name: string) => Promise<string>;
   onDeleteShelf: (id: string) => void;
   onRenameShelf: (id: string, name: string) => void;
 }
@@ -571,10 +571,10 @@ function ShelfList({ shelves, onSelectShelf, onCreateShelf, onDeleteShelf, onRen
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameVal, setRenameVal] = useState("");
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim()) return;
-    const newId = onCreateShelf(newName);
+    const newId = await onCreateShelf(newName);
     setNewName("");
     setCreating(false);
     toast.success("Kệ mới đã tạo — thêm tác phẩm ngay nhé ✦");
