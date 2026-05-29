@@ -574,11 +574,17 @@ function ShelfList({ shelves, onSelectShelf, onCreateShelf, onDeleteShelf, onRen
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim()) return;
-    const newId = await onCreateShelf(newName);
-    setNewName("");
-    setCreating(false);
-    toast.success("Kệ mới đã tạo — thêm tác phẩm ngay nhé ✦");
-    onSelectShelf(newId);
+    try {
+      const newId = await onCreateShelf(newName);
+      setNewName("");
+      setCreating(false);
+      toast.success("Kệ mới đã tạo — thêm tác phẩm ngay nhé ✦");
+      onSelectShelf(newId);
+    } catch (err) {
+      console.error("[handleCreate]", err);
+      toast.error("Không thể tạo kệ — vui lòng thử lại.");
+      setCreating(false);
+    }
   };
 
   const handleRename = (e: React.FormEvent, id: string) => {

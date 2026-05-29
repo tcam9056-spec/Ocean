@@ -24,7 +24,16 @@ async function apiFetch(url: string, options?: RequestInit) {
     ...options,
     headers: { "Content-Type": "application/json", ...(options?.headers ?? {}) },
   });
-  if (!res.ok) throw new Error(`API error ${res.status}`);
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const body = await res.json();
+      detail = body?.error ?? body?.detail ?? "";
+    } catch {
+      /* ignore parse error */
+    }
+    throw new Error(`API error ${res.status}${detail ? `: ${detail}` : ""}`);
+  }
   return res.json();
 }
 
@@ -66,11 +75,15 @@ export function useShelvesStore() {
     apiFetch(`/api/shelves/${id}`, {
       method: "PATCH",
       body: JSON.stringify({ name }),
-    }).then(invalidate);
+    })
+      .then(invalidate)
+      .catch((err: unknown) => console.error("[renameShelf]", err));
   }, [invalidate]);
 
   const deleteShelf = useCallback((id: string) => {
-    apiFetch(`/api/shelves/${id}`, { method: "DELETE" }).then(invalidate);
+    apiFetch(`/api/shelves/${id}`, { method: "DELETE" })
+      .then(invalidate)
+      .catch((err: unknown) => console.error("[deleteShelf]", err));
   }, [invalidate]);
 
   const addArtwork = useCallback(
@@ -78,7 +91,9 @@ export function useShelvesStore() {
       apiFetch(`/api/shelves/${shelfId}/artworks`, {
         method: "POST",
         body: JSON.stringify(data),
-      }).then(invalidate);
+      })
+        .then(invalidate)
+        .catch((err: unknown) => console.error("[addArtwork]", err));
     },
     [invalidate]
   );
@@ -88,7 +103,9 @@ export function useShelvesStore() {
       apiFetch(`/api/shelves/${shelfId}/artworks/${artId}`, {
         method: "PATCH",
         body: JSON.stringify(data),
-      }).then(invalidate);
+      })
+        .then(invalidate)
+        .catch((err: unknown) => console.error("[updateArtwork]", err));
     },
     [invalidate]
   );
@@ -96,13 +113,17 @@ export function useShelvesStore() {
   const deleteArtwork = useCallback((shelfId: string, artId: string) => {
     apiFetch(`/api/shelves/${shelfId}/artworks/${artId}`, {
       method: "DELETE",
-    }).then(invalidate);
+    })
+      .then(invalidate)
+      .catch((err: unknown) => console.error("[deleteArtwork]", err));
   }, [invalidate]);
 
   const likeArtwork = useCallback((shelfId: string, artId: string) => {
     apiFetch(`/api/shelves/${shelfId}/artworks/${artId}/like`, {
       method: "POST",
-    }).then(invalidate);
+    })
+      .then(invalidate)
+      .catch((err: unknown) => console.error("[likeArtwork]", err));
   }, [invalidate]);
 
   const refresh = useCallback(() => {

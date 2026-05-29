@@ -1,5 +1,5 @@
 import path from "path";
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
@@ -39,5 +39,13 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(path.join(staticDir, "index.html"));
   });
 }
+
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  const message = err instanceof Error ? err.message : String(err);
+  logger.error({ err, method: req.method, url: req.url }, "Unhandled route error");
+  if (!res.headersSent) {
+    res.status(500).json({ error: "Internal server error", detail: message });
+  }
+});
 
 export default app;
