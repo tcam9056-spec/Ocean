@@ -100,6 +100,24 @@ function OceanApp() {
 
   return (
     <div className="ocean-root">
+      {/* Video background */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{
+          position: "fixed",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          zIndex: -1,
+        }}
+      >
+        <source src="/bg-video.mp4" type="video/mp4" />
+      </video>
+
       <OceanBackground />
 
       <AnimatePresence>
