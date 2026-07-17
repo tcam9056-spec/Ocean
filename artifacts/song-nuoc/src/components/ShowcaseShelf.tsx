@@ -49,32 +49,28 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
         placeholder="tìm tác phẩm, kệ..."
         style={{
           width: "100%",
-          background: "rgba(8,18,42,0.22)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          border: "1px solid rgba(197,168,255,0.14)",
-          borderRadius: "999px",
+          background: "rgba(255,255,255,0.08)",
+          backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          borderRadius: "10px",
           padding: "11px 20px 11px 38px",
-          color: "rgba(240,244,255,0.88)",
+          color: "rgba(240,244,255,0.92)",
           fontSize: "0.85rem",
           fontFamily: "'Cormorant Garamond', Georgia, serif",
           fontWeight: 500,
           letterSpacing: "0.04em",
           outline: "none",
-          boxShadow: value
-            ? "0 0 0 1px rgba(78,205,196,0.25), 0 0 24px rgba(78,205,196,0.08)"
-            : "0 0 0 1px rgba(197,168,255,0.06)",
-          transition: "box-shadow 0.3s, border-color 0.3s",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
+          transition: "border-color 0.3s, box-shadow 0.3s",
         }}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = "rgba(78,205,196,0.32)";
-          e.currentTarget.style.boxShadow = "0 0 0 1px rgba(78,205,196,0.2), 0 0 24px rgba(78,205,196,0.1)";
+          e.currentTarget.style.borderColor = "rgba(78,205,196,0.5)";
+          e.currentTarget.style.boxShadow = "0 0 0 2px rgba(78,205,196,0.15), 0 2px 12px rgba(0,0,0,0.15)";
         }}
         onBlur={(e) => {
-          e.currentTarget.style.borderColor = "rgba(197,168,255,0.14)";
-          e.currentTarget.style.boxShadow = value
-            ? "0 0 0 1px rgba(78,205,196,0.18)"
-            : "0 0 0 1px rgba(197,168,255,0.06)";
+          e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+          e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.15)";
         }}
         aria-label="Tìm kiếm"
       />
@@ -358,7 +354,15 @@ function ShelfSection({ shelf, shelfIndex, onLike, highlightIds }: ShelfSectionP
       {/* Artwork rows */}
       <div
         className="overflow-hidden"
-        style={{ borderRight: "1px solid rgba(255,255,255,0.07)" }}
+        style={{
+          width: "100%",
+          background: "rgba(255,255,255,0.08)",
+          backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          borderRadius: "10px",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
+        }}
       >
         {rows.map((row, ri) => {
           const base = counter;
@@ -368,13 +372,7 @@ function ShelfSection({ shelf, shelfIndex, onLike, highlightIds }: ShelfSectionP
               key={ri}
               className="relative flex"
               style={{
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
-                background: "rgba(8,18,42,0.18)",
-                borderBottom: "2px solid rgba(255,255,255,0.14)",
-                borderLeft: "1px solid rgba(255,255,255,0.07)",
-                borderTop: ri === 0 ? "1px solid rgba(255,255,255,0.07)" : "none",
-                boxShadow: "inset 0 1px 0 rgba(240,244,255,0.05), 0 4px 20px rgba(0,10,40,0.2)",
+                borderBottom: ri < rows.length - 1 ? "1px solid rgba(255,255,255,0.12)" : "none",
               }}
             >
               {/* Shelf glow stripe */}
@@ -418,10 +416,14 @@ function SkeletonShelf() {
       </div>
       {[0].map((ri) => (
         <div key={ri} className="flex" style={{
-          backdropFilter: "blur(20px)",
-          background: "rgba(255,255,255,0.02)",
-          borderBottom: "2px solid rgba(255,255,255,0.1)",
-          borderLeft: "1px solid rgba(255,255,255,0.06)",
+          width: "100%",
+          background: "rgba(255,255,255,0.08)",
+          backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          borderRadius: "10px",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
+          overflow: "hidden",
         }}>
           {[7, 5].map((w, ci) => (
             <motion.div
@@ -569,16 +571,19 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
             className="flex items-center justify-center"
             style={{
               minHeight: 80,
-              backdropFilter: "blur(16px)",
-              background: "rgba(255,255,255,0.02)",
-              border: "1px solid rgba(255,255,255,0.06)",
-              borderBottom: "2px solid rgba(255,255,255,0.1)",
+              width: "100%",
+              background: "rgba(255,255,255,0.08)",
+              backdropFilter: "blur(4px)",
+              WebkitBackdropFilter: "blur(4px)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              borderRadius: "10px",
+              boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
             }}
           >
             <p style={{
               fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontStyle: "italic", fontWeight: 300,
-              fontSize: "0.8rem", color: "rgba(197,168,255,0.2)",
+              fontStyle: "italic", fontWeight: 500,
+              fontSize: "0.8rem", color: "rgba(197,168,255,0.45)",
               letterSpacing: "0.08em",
             }}>
               kệ trống
