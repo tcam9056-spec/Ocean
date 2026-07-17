@@ -539,10 +539,10 @@
   box-sizing: border-box;
   border-radius: 20px;
   padding: 1.25rem 1.5rem;
-  /* Glassmorphism: nền trắng trong suốt */
-  background: rgba(255, 255, 255, 0.13);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  /* Nền đủ tối để chữ trắng nổi bật, không bị xuyên thấu */
+  background: rgba(10, 18, 40, 0.82);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow:
     0 8px 32px 0 rgba(31, 38, 135, 0.22),
