@@ -176,7 +176,7 @@ export function LinkCard({ link, isAdmin, cardIndex }: LinkCardProps) {
           transition={{ duration: dissolving ? 0.85 : 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="relative group w-full max-w-sm"
           style={{
-            background: "rgba(8,18,42,0.62)",
+            background: "rgba(8,18,42,0.32)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
             borderRadius: blobRadius,
@@ -266,7 +266,7 @@ export function LinkCard({ link, isAdmin, cardIndex }: LinkCardProps) {
               className="leading-snug mb-3 pr-7"
               style={{
                 fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontWeight: 400,
+                fontWeight: 600,
                 fontSize: "1.25rem",
                 color: "rgba(240,244,255,0.94)",
                 textShadow: `0 0 18px ${neon.glow}0.35)`,
@@ -282,9 +282,9 @@ export function LinkCard({ link, isAdmin, cardIndex }: LinkCardProps) {
                 style={{
                   fontFamily: "'Cormorant Garamond', Georgia, serif",
                   fontStyle: "italic",
-                  fontWeight: 300,
+                  fontWeight: 500,
                   fontSize: "0.92rem",
-                  color: "rgba(197,168,255,0.62)",
+                  color: "rgba(197,168,255,0.78)",
                   lineHeight: 1.65,
                   marginBottom: "1rem",
                 }}

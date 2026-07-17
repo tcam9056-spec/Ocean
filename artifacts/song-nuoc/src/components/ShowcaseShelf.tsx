@@ -49,7 +49,7 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
         placeholder="tìm tác phẩm, kệ..."
         style={{
           width: "100%",
-          background: "rgba(8,18,42,0.45)",
+          background: "rgba(8,18,42,0.22)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
           border: "1px solid rgba(197,168,255,0.14)",
@@ -58,7 +58,7 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
           color: "rgba(240,244,255,0.88)",
           fontSize: "0.85rem",
           fontFamily: "'Cormorant Garamond', Georgia, serif",
-          fontWeight: 300,
+          fontWeight: 500,
           letterSpacing: "0.04em",
           outline: "none",
           boxShadow: value
@@ -220,9 +220,9 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
             style={{
               fontFamily: "'Cormorant Garamond', Georgia, serif",
               fontStyle: "italic",
-              fontWeight: 300,
+              fontWeight: 500,
               fontSize: "clamp(0.76rem, 1.1vw, 0.86rem)",
-              color: "rgba(197,168,255,0.52)",
+              color: "rgba(197,168,255,0.65)",
               lineHeight: 1.55,
               wordBreak: "break-word",
             }}
@@ -339,11 +339,11 @@ function ShelfSection({ shelf, shelfIndex, onLike, highlightIds }: ShelfSectionP
         <h2
           style={{
             fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontWeight: 300,
+            fontWeight: 500,
             fontStyle: "italic",
             fontSize: "clamp(0.85rem, 1.5vw, 1rem)",
             letterSpacing: "0.14em",
-            color: "rgba(197,168,255,0.55)",
+            color: "rgba(197,168,255,0.65)",
             textTransform: "uppercase",
           }}
         >
@@ -370,7 +370,7 @@ function ShelfSection({ shelf, shelfIndex, onLike, highlightIds }: ShelfSectionP
               style={{
                 backdropFilter: "blur(20px)",
                 WebkitBackdropFilter: "blur(20px)",
-                background: "rgba(255,255,255,0.03)",
+                background: "rgba(8,18,42,0.18)",
                 borderBottom: "2px solid rgba(255,255,255,0.14)",
                 borderLeft: "1px solid rgba(255,255,255,0.07)",
                 borderTop: ri === 0 ? "1px solid rgba(255,255,255,0.07)" : "none",

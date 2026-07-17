@@ -20,7 +20,7 @@ export function StatsBar({ shelves }: StatsBarProps) {
       transition={{ delay: 0.5, duration: 1.2 }}
       className="flex items-center justify-center gap-6 sm:gap-8 py-3 px-6 sm:px-8 mx-auto mb-10 w-fit rounded-full"
       style={{
-        background: "rgba(8,18,42,0.45)",
+        background: "rgba(8,18,42,0.22)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
         border: "1px solid rgba(197,168,255,0.12)",
@@ -41,9 +41,9 @@ export function StatsBar({ shelves }: StatsBarProps) {
         />
         <span style={{
           fontFamily: "'Cormorant Garamond', Georgia, serif",
-          fontWeight: 300, fontSize: "0.7rem",
+          fontWeight: 500, fontSize: "0.7rem",
           letterSpacing: "0.18em", textTransform: "uppercase",
-          color: "rgba(197,168,255,0.4)",
+          color: "rgba(197,168,255,0.6)",
           whiteSpace: "nowrap",
         }}>
           Tác phẩm
@@ -77,9 +77,9 @@ export function StatsBar({ shelves }: StatsBarProps) {
         />
         <span style={{
           fontFamily: "'Cormorant Garamond', Georgia, serif",
-          fontWeight: 300, fontSize: "0.7rem",
+          fontWeight: 500, fontSize: "0.7rem",
           letterSpacing: "0.18em", textTransform: "uppercase",
-          color: "rgba(197,168,255,0.4)",
+          color: "rgba(197,168,255,0.6)",
           whiteSpace: "nowrap",
         }}>
           Yêu thích
@@ -113,9 +113,9 @@ export function StatsBar({ shelves }: StatsBarProps) {
         />
         <span style={{
           fontFamily: "'Cormorant Garamond', Georgia, serif",
-          fontWeight: 300, fontSize: "0.7rem",
+          fontWeight: 500, fontSize: "0.7rem",
           letterSpacing: "0.18em", textTransform: "uppercase",
-          color: "rgba(197,168,255,0.4)",
+          color: "rgba(197,168,255,0.6)",
           whiteSpace: "nowrap",
         }}>
           Kệ
