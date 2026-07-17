@@ -256,9 +256,14 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (html: s
 
     const q = new Quill(containerRef.current, {
       theme: "snow",
-      placeholder: "cốt truyện… (hỗ trợ in đậm, in nghiêng, đổi màu)",
+      placeholder: "cốt truyện… (hỗ trợ in đậm, in nghiêng, gạch chân, danh sách)",
       modules: {
-        toolbar: [["bold", "italic"], [{ color: [] }], ["clean"]],
+        toolbar: [
+          ["bold", "italic", "underline"],
+          [{ list: "bullet" }],
+          [{ color: [] }],
+          ["clean"],
+        ],
       },
     });
 
@@ -331,12 +336,27 @@ function ArtworkForm({ initial, onSave, onCancel }: ArtworkFormProps) {
         onChange={(e) => setDesc(e.target.value)}
         placeholder="mô tả nhẹ nhàng..."
       />
-      <TextArea
-        value={plot}
-        onChange={(e) => setPlot(e.target.value)}
-        placeholder="cốt truyện (tuỳ chọn)..."
-        style={{ height: 110 }}
-      />
+      {/* Rich text editor — lưu HTML, hỗ trợ bold/italic/underline/list */}
+      <div style={{
+        borderRadius: "10px",
+        overflow: "hidden",
+        border: "1px solid rgba(197,168,255,0.18)",
+        background: "rgba(8,18,42,0.5)",
+      }}>
+        <div style={{
+          padding: "6px 10px",
+          borderBottom: "1px solid rgba(197,168,255,0.1)",
+          background: "rgba(6,12,32,0.7)",
+          fontSize: "0.68rem",
+          color: "rgba(197,168,255,0.45)",
+          fontFamily: "'Cormorant Garamond', Georgia, serif",
+          letterSpacing: "0.12em",
+          fontStyle: "italic",
+        }}>
+          ✦ cốt truyện
+        </div>
+        <RichTextEditor value={plot} onChange={setPlot} />
+      </div>
       <Field
         type="url"
         value={link}

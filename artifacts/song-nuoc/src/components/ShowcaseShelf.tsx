@@ -92,11 +92,14 @@ interface PlotModalProps {
 }
 
 function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
-  /* Close on Escape */
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
   }, [onClose]);
 
   return (
@@ -104,7 +107,7 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.22 }}
+      transition={{ duration: 0.25 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       style={{
         position: "fixed",
@@ -113,56 +116,74 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "20px 16px",
-        /* Overlay rất nhạt để đại dương phía sau hiện qua kính modal */
-        background: "rgba(0,8,28,0.28)",
-        backdropFilter: "blur(2px)",
-        WebkitBackdropFilter: "blur(2px)",
+        padding: "24px 20px",
+        background: "rgba(0,6,22,0.55)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
       }}
     >
       <motion.div
-        initial={{ scale: 0.88, y: 24, opacity: 0 }}
+        initial={{ scale: 0.9, y: 28, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
-        exit={{ scale: 0.88, y: 24, opacity: 0 }}
-        transition={{ duration: 0.32, ease: [0.25, 0.46, 0.45, 0.94] }}
+        exit={{ scale: 0.9, y: 28, opacity: 0 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
         className="plot-modal-glass"
         style={{
           position: "relative",
           width: "100%",
-          maxWidth: 520,
-          maxHeight: "80vh",
+          maxWidth: 600,
+          maxHeight: "82vh",
           display: "flex",
           flexDirection: "column",
         }}
       >
+        {/* Accent glow strip at top */}
+        <div style={{
+          position: "absolute",
+          top: 0, left: "10%", right: "10%",
+          height: 1,
+          background: `linear-gradient(90deg, transparent, ${accent.glow}, transparent)`,
+          borderRadius: "50%",
+          opacity: 0.8,
+        }} />
+
         {/* Header */}
         <div style={{
-          padding: "20px 48px 12px 24px",
-          borderBottom: "1px solid rgba(255,255,255,0.15)",
+          padding: "26px 56px 18px 28px",
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
           flexShrink: 0,
         }}>
-          <p style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontWeight: 300,
-            fontStyle: "italic",
-            fontSize: "0.65rem",
-            letterSpacing: "0.22em",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.75)",
-            marginBottom: 4,
-            textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 8,
           }}>
-            🐳 cốt truyện
-          </p>
+            <span style={{ fontSize: "16px", lineHeight: 1 }}>🐳</span>
+            <span style={{
+              fontFamily: "'Cormorant Garamond', Georgia, serif",
+              fontWeight: 300,
+              fontStyle: "italic",
+              fontSize: "0.62rem",
+              letterSpacing: "0.28em",
+              textTransform: "uppercase",
+              color: accent.glow,
+              textShadow: `0 0 12px ${accent.glow}`,
+            }}>
+              cốt truyện
+            </span>
+          </div>
           <h3 style={{
             fontFamily: "'Cormorant Garamond', Georgia, serif",
             fontWeight: 600,
-            fontSize: "1.15rem",
-            color: "rgba(255,255,255,0.95)",
-            letterSpacing: "0.02em",
-            textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+            fontStyle: "italic",
+            fontSize: "1.35rem",
+            color: "rgba(255,255,255,0.97)",
+            letterSpacing: "0.03em",
+            textShadow: "0 2px 8px rgba(0,0,0,0.5)",
             margin: 0,
             wordBreak: "break-word",
+            lineHeight: 1.3,
           }}>
             {title}
           </h3>
@@ -174,21 +195,32 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
           aria-label="Đóng"
           style={{
             position: "absolute",
-            top: 14,
-            right: 14,
-            width: 28,
-            height: 28,
+            top: 16,
+            right: 16,
+            width: 32,
+            height: 32,
             borderRadius: "50%",
-            background: "rgba(255,255,255,0.15)",
-            border: "1px solid rgba(255,255,255,0.35)",
-            color: "rgba(255,255,255,0.75)",
-            fontSize: "12px",
+            background: "rgba(255,255,255,0.1)",
+            border: "1px solid rgba(255,255,255,0.25)",
+            color: "rgba(255,255,255,0.65)",
+            fontSize: "13px",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             touchAction: "manipulation",
             flexShrink: 0,
+            transition: "all 0.18s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.22)";
+            e.currentTarget.style.color = "rgba(255,255,255,0.95)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+            e.currentTarget.style.color = "rgba(255,255,255,0.65)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)";
           }}
         >
           ✕
@@ -197,19 +229,32 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
         {/* Scrollable body */}
         <div
           className="plot-modal-body"
-          style={{ flex: 1, overflowY: "auto", padding: "24px 32px 36px", willChange: "transform" }}
+          style={{ flex: 1, overflowY: "auto", padding: "28px 32px 40px", willChange: "transform" }}
         >
-          {/* dangerouslySetInnerHTML renders Quill HTML faithfully.
-              Colors come from .plot-modal-body > div in CSS (rgba white default).
-              Admin's <span style="color:…"> override via inline style precedence. */}
-          <div
-            dangerouslySetInnerHTML={{
-              __html: plot
-                ? plot
-                : '<em style="color:rgba(255,255,255,0.5)">Chưa có cốt truyện.</em>',
-            }}
-          />
+          {plot ? (
+            <div className="plot-modal-content" dangerouslySetInnerHTML={{ __html: plot }} />
+          ) : (
+            <p style={{
+              fontFamily: "'Cormorant Garamond', Georgia, serif",
+              fontStyle: "italic",
+              color: "rgba(255,255,255,0.35)",
+              fontSize: "1rem",
+              margin: 0,
+            }}>
+              Chưa có cốt truyện.
+            </p>
+          )}
         </div>
+
+        {/* Bottom fade */}
+        <div style={{
+          position: "absolute",
+          bottom: 0, left: 0, right: 0,
+          height: 48,
+          background: "linear-gradient(to top, rgba(8,16,40,0.6), transparent)",
+          borderRadius: "0 0 24px 24px",
+          pointerEvents: "none",
+        }} />
       </motion.div>
     </motion.div>
   );

@@ -509,42 +509,127 @@
 /* ── PlotModal — lồng kính bóng nước (dùng class để !important hoạt động) ── */
 .plot-modal-glass {
   background: linear-gradient(
-    135deg,
-    rgba(135, 206, 250, 0.1) 0%,
-    rgba(255, 182, 193, 0.1) 100%
+    145deg,
+    rgba(10, 20, 60, 0.82) 0%,
+    rgba(6, 14, 42, 0.88) 100%
   ) !important;
-  backdrop-filter: blur(20px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
-              inset 0 0 15px rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(28px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.55),
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 0 40px rgba(78, 205, 196, 0.04) !important;
   border-radius: 24px !important;
-  /* GPU layer riêng — chuẩn bị trước khi animate */
   transform: translateZ(0) !important;
   backface-visibility: hidden !important;
-  perspective: 1000px !important;
-  will-change: transform, backdrop-filter !important;
+  will-change: transform, opacity !important;
 }
 
-/* Vùng text cuộn — màu trắng mặc định, span màu admin vẫn override được */
+/* Vùng text cuộn */
 .plot-modal-body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  /* Không render text ngoài vùng nhìn thấy — tối ưu máy yếu */
   contain: paint layout;
 }
-.plot-modal-body > div {
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+
+/* Nội dung HTML từ Quill — typography nghệ */
+.plot-modal-content {
+  color: rgba(230, 238, 255, 0.92);
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1rem;
-  line-height: 1.85;
+  font-size: 1.08rem;
+  font-weight: 300;
+  line-height: 2;
   word-break: break-word;
   text-rendering: optimizeLegibility;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
-/* Cho phép span màu của admin hiển thị đúng — KHÔNG ép màu lên <span> */
-.plot-modal-body > div span[style*="color"] {
+.plot-modal-content p { margin: 0 0 1em; }
+.plot-modal-content p:last-child { margin-bottom: 0; }
+.plot-modal-content strong { font-weight: 600; color: rgba(255, 255, 255, 0.98); }
+.plot-modal-content em { font-style: italic; color: rgba(197, 168, 255, 0.9); }
+.plot-modal-content u { text-decoration-color: rgba(78, 205, 196, 0.6); }
+.plot-modal-content ul {
+  margin: 0.5em 0 1em 1.2em;
+  padding: 0;
+  list-style: none;
+}
+.plot-modal-content ul li {
+  position: relative;
+  padding-left: 1.2em;
+  margin-bottom: 0.4em;
+}
+.plot-modal-content ul li::before {
+  content: "✦";
+  position: absolute;
+  left: 0;
+  color: rgba(78, 205, 196, 0.6);
+  font-size: 0.6em;
+  top: 0.35em;
+}
+.plot-modal-content span[style*="color"] {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Quill editor trong AdminPanel — override snow theme theo đại dương ── */
+.ql-toolbar.ql-snow {
+  background: rgba(6, 12, 32, 0.9) !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(197, 168, 255, 0.12) !important;
+  padding: 6px 10px !important;
+}
+.ql-toolbar.ql-snow .ql-formats { margin-right: 8px !important; }
+.ql-toolbar.ql-snow button,
+.ql-toolbar.ql-snow .ql-picker-label {
+  color: rgba(197, 168, 255, 0.65) !important;
+  filter: none !important;
+}
+.ql-toolbar.ql-snow button:hover,
+.ql-toolbar.ql-snow button.ql-active,
+.ql-toolbar.ql-snow .ql-picker-label:hover {
+  color: rgba(78, 205, 196, 0.95) !important;
+}
+.ql-toolbar.ql-snow button svg .ql-stroke,
+.ql-toolbar.ql-snow .ql-picker-label svg .ql-stroke {
+  stroke: rgba(197, 168, 255, 0.65) !important;
+}
+.ql-toolbar.ql-snow button:hover svg .ql-stroke,
+.ql-toolbar.ql-snow button.ql-active svg .ql-stroke {
+  stroke: rgba(78, 205, 196, 0.95) !important;
+}
+.ql-toolbar.ql-snow button svg .ql-fill,
+.ql-toolbar.ql-snow button.ql-active svg .ql-fill {
+  fill: rgba(78, 205, 196, 0.95) !important;
+}
+.ql-container.ql-snow {
+  background: rgba(8, 18, 42, 0.6) !important;
+  border: none !important;
+  min-height: 120px !important;
+}
+.ql-editor {
+  color: rgba(230, 238, 255, 0.88) !important;
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 0.92rem !important;
+  font-weight: 300 !important;
+  line-height: 1.75 !important;
+  padding: 12px 14px !important;
+  min-height: 110px !important;
+}
+.ql-editor.ql-blank::before {
+  color: rgba(197, 168, 255, 0.28) !important;
+  font-style: italic !important;
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 0.88rem !important;
+}
+.ql-editor strong, .ql-editor b { color: rgba(255, 255, 255, 0.95) !important; }
+.ql-editor em, .ql-editor i { color: rgba(197, 168, 255, 0.85) !important; }
+.ql-editor ul li { color: rgba(230, 238, 255, 0.88) !important; }
+.ql-snow .ql-picker-options {
+  background: rgba(8, 18, 42, 0.96) !important;
+  border: 1px solid rgba(197, 168, 255, 0.15) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* ── Video nền — GPU layer riêng, không cản trở render kính bên trên ── */
