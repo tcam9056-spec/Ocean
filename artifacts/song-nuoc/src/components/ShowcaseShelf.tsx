@@ -131,12 +131,12 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
           maxHeight: "80vh",
           display: "flex",
           flexDirection: "column",
-          background: "rgba(255,255,255,0.1)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          border: "1px solid rgba(255,255,255,0.4)",
-          borderRadius: "32px",
-          boxShadow: "0 8px 32px 0 rgba(0,150,255,0.2), inset 0 2px 10px rgba(255,255,255,0.3)",
+          background: "linear-gradient(135deg, rgba(135,206,250,0.15) 0%, rgba(255,182,193,0.15) 100%)",
+          backdropFilter: "blur(16px) saturate(120%)",
+          WebkitBackdropFilter: "blur(16px) saturate(120%)",
+          border: "1px solid rgba(255,255,255,0.5)",
+          borderRadius: "24px",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.15), inset 0 0 20px rgba(255,255,255,0.3)",
         }}
       >
         {/* Header */}
@@ -202,25 +202,30 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
         <div style={{
           flex: 1,
           overflowY: "auto",
-          padding: "20px 28px 32px",
+          padding: "24px 32px 36px",
           WebkitOverflowScrolling: "touch",
           overscrollBehavior: "contain",
           willChange: "transform, scroll-position",
         }}>
+          {/*
+            dangerouslySetInnerHTML lets Quill HTML render faithfully.
+            color on this container is only the default (white); any
+            <span style="color:…"> set by admin overrides it via inline style precedence.
+          */}
           <div
             dangerouslySetInnerHTML={{
               __html: plot
                 ? plot
-                : '<em style="color:rgba(255,255,255,0.4)">Chưa có cốt truyện.</em>',
+                : '<em style="color:rgba(255,255,255,0.5)">Chưa có cốt truyện.</em>',
             }}
             style={{
               fontFamily: "'Cormorant Garamond', Georgia, serif",
               fontWeight: 400,
-              fontSize: "0.97rem",
-              color: "rgba(255,255,255,0.9)",
-              lineHeight: 1.8,
+              fontSize: "1rem",
+              color: "#ffffff",
+              lineHeight: 1.85,
               wordBreak: "break-word",
-              textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+              textShadow: "0 1px 3px rgba(0,0,0,0.4)",
               textRendering: "optimizeLegibility",
             }}
           />
