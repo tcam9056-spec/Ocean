@@ -49,9 +49,9 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
         placeholder="tìm tác phẩm, kệ..."
         style={{
           width: "100%",
-          background: "transparent",
-          border: "2px dashed rgba(255,255,255,0.6)",
-          borderRadius: "16px",
+          background: "rgba(255,255,255,0.05)",
+          border: "1px solid rgba(255,255,255,0.15)",
+          borderRadius: "14px",
           padding: "11px 20px 11px 38px",
           color: "#ffffff",
           fontSize: "0.85rem",
@@ -59,17 +59,17 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
           fontWeight: 500,
           letterSpacing: "0.04em",
           outline: "none",
-          boxShadow: "0 0 15px rgba(255,255,255,0.15), 0 2px 12px rgba(0,0,0,0.3)",
+          boxShadow: "inset 0 0 10px rgba(255,255,255,0.03), 0 4px 15px rgba(0,0,0,0.15)",
           textShadow: "1px 1px 3px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.7)",
           transition: "border-color 0.3s, box-shadow 0.3s",
         }}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = "rgba(78,205,196,0.8)";
-          e.currentTarget.style.boxShadow = "0 0 15px rgba(78,205,196,0.25), 0 0 0 2px rgba(78,205,196,0.15)";
+          e.currentTarget.style.borderColor = "rgba(78,205,196,0.45)";
+          e.currentTarget.style.boxShadow = "inset 0 0 10px rgba(78,205,196,0.05), 0 0 0 2px rgba(78,205,196,0.12)";
         }}
         onBlur={(e) => {
-          e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)";
-          e.currentTarget.style.boxShadow = "0 0 15px rgba(255,255,255,0.15), 0 2px 12px rgba(0,0,0,0.3)";
+          e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
+          e.currentTarget.style.boxShadow = "inset 0 0 10px rgba(255,255,255,0.03), 0 4px 15px rgba(0,0,0,0.15)";
         }}
         aria-label="Tìm kiếm"
       />
@@ -164,10 +164,11 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
       className="group relative overflow-hidden"
       style={{
         minHeight: 130,
-        background: "transparent",
-        border: "2px dashed rgba(255,255,255,0.55)",
-        borderRadius: "16px",
-        boxShadow: "0 0 15px rgba(255,255,255,0.12)",
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.1)",
+        borderRadius: "20px",
+        boxShadow: "inset 0 0 10px rgba(255,255,255,0.05), 0 4px 15px rgba(0,0,0,0.1)",
+        padding: "16px",
       }}
     >
       {/* Hover glow */}
@@ -541,86 +542,41 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
         </motion.div>
       )}
 
+      {/* Ocean divider decoration */}
+      {!isEmpty && !noResults && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 1.2 }}
+          aria-hidden
+          style={{
+            textAlign: "center",
+            color: "rgba(255,255,255,0.6)",
+            fontSize: "18px",
+            marginBottom: "16px",
+            marginTop: "-4px",
+            textShadow: "0 0 8px rgba(255,255,255,0.4)",
+            letterSpacing: "4px",
+            userSelect: "none",
+            pointerEvents: "none",
+          }}
+        >
+          𓆝 𓆟 𓆞 𓇼 ⋆.° 𓆉 𓆡 ⋆.˚ 𓇼
+        </motion.div>
+      )}
+
       {/* Paginated artwork grid */}
       {!isEmpty && !noResults && (
         <div
           style={{
-            position: "relative",
-            background: "transparent",
-            border: "2px dashed rgba(255,255,255,0.45)",
+            background: "rgba(255,255,255,0.05)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            border: "none",
             borderRadius: "20px",
-            boxShadow: "0 0 15px rgba(255,255,255,0.12), inset 0 0 20px rgba(255,255,255,0.02)",
-            padding: "18px 12px 12px",
+            padding: "12px",
           }}
         >
-          {/* Corner decorations — top-left */}
-          <span
-            aria-hidden
-            style={{
-              position: "absolute",
-              top: -11,
-              left: 10,
-              fontSize: "13px",
-              lineHeight: 1,
-              color: "rgba(255,255,255,0.7)",
-              textShadow: "0 0 10px rgba(255,255,255,0.6)",
-              pointerEvents: "none",
-              letterSpacing: "2px",
-              userSelect: "none",
-            }}
-          >𓆝 𓆟 𓆞</span>
-
-          {/* Corner decorations — top-right */}
-          <span
-            aria-hidden
-            style={{
-              position: "absolute",
-              top: -11,
-              right: 10,
-              fontSize: "13px",
-              lineHeight: 1,
-              color: "rgba(255,255,255,0.7)",
-              textShadow: "0 0 10px rgba(255,255,255,0.6)",
-              pointerEvents: "none",
-              letterSpacing: "2px",
-              userSelect: "none",
-            }}
-          >𓆡 ⋆.° 𓇼</span>
-
-          {/* Corner decorations — bottom-left */}
-          <span
-            aria-hidden
-            style={{
-              position: "absolute",
-              bottom: -11,
-              left: 10,
-              fontSize: "13px",
-              lineHeight: 1,
-              color: "rgba(255,255,255,0.7)",
-              textShadow: "0 0 10px rgba(255,255,255,0.6)",
-              pointerEvents: "none",
-              letterSpacing: "2px",
-              userSelect: "none",
-            }}
-          >𓇼 ⋆｡𖦹 ˚</span>
-
-          {/* Corner decorations — bottom-right */}
-          <span
-            aria-hidden
-            style={{
-              position: "absolute",
-              bottom: -11,
-              right: 10,
-              fontSize: "13px",
-              lineHeight: 1,
-              color: "rgba(255,255,255,0.7)",
-              textShadow: "0 0 10px rgba(255,255,255,0.6)",
-              pointerEvents: "none",
-              letterSpacing: "2px",
-              userSelect: "none",
-            }}
-          >𓆉 ⋆.˚ 𓇼</span>
-
           <AnimatePresence mode="wait">
             <motion.div
               key={safePage}
@@ -631,7 +587,7 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(2, 1fr)",
-                gap: "8px",
+                gap: "12px",
               }}
             >
               {pageItems.map(({ artwork, shelfId, accent }) => (
