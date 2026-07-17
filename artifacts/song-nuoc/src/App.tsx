@@ -132,6 +132,14 @@ function OceanApp() {
             transition={{ duration: 1.6, ease: "easeOut" }}
             className="relative z-10 min-h-screen"
           >
+            <a
+              href="https://www.facebook.com/profile.php?id=61586109384108"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="page-link-btn"
+            >
+              page
+            </a>
             <MuteButton isMuted={isMuted} onToggle={handleMuteToggle} />
 
             <div className="ocean-scroll-container">

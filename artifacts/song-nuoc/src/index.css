@@ -463,6 +463,37 @@
 .ql-snow button.ql-active .ql-stroke { stroke: rgba(78, 205, 196, 1) !important; }
 .ql-snow button.ql-active .ql-fill   { fill:   rgba(78, 205, 196, 1) !important; }
 
+/* ── Nút Page góc trên trái — pill bong bóng đại dương ── */
+.page-link-btn {
+  display: inline-block;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 50;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 30px;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.875rem;
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+  line-height: 1.5;
+}
+.page-link-btn:hover,
+.page-link-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  text-decoration: none;
+}
+
 /* ── PlotModal — lồng kính bóng nước (dùng class để !important hoạt động) ── */
 .plot-modal-glass {
   background: linear-gradient(
