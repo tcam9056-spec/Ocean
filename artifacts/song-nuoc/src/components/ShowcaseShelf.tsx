@@ -83,6 +83,147 @@ const SearchBar = memo(function SearchBar({ value, onChange }: { value: string; 
   );
 });
 
+/* ─── Plot modal ──────────────────────────────────────────────── */
+interface PlotModalProps {
+  title: string;
+  plot: string;
+  accent: typeof NEON[0];
+  onClose: () => void;
+}
+
+function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
+  /* Close on Escape */
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.22 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 500,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "20px 16px",
+        background: "rgba(2,8,20,0.72)",
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.88, y: 24, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.88, y: 24, opacity: 0 }}
+        transition={{ duration: 0.32, ease: [0.25, 0.46, 0.45, 0.94] }}
+        style={{
+          position: "relative",
+          width: "100%",
+          maxWidth: 520,
+          maxHeight: "80vh",
+          display: "flex",
+          flexDirection: "column",
+          background: "rgba(8,16,38,0.88)",
+          backdropFilter: "blur(28px)",
+          WebkitBackdropFilter: "blur(28px)",
+          border: `1px solid ${accent.border}0.28)`,
+          borderRadius: "24px",
+          boxShadow: `0 32px 80px rgba(0,8,32,0.7), 0 0 40px ${accent.glow}0.1), inset 0 1px 0 rgba(240,244,255,0.07)`,
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          padding: "20px 48px 12px 24px",
+          borderBottom: `1px solid ${accent.border}0.12)`,
+          flexShrink: 0,
+        }}>
+          <p style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontWeight: 300,
+            fontStyle: "italic",
+            fontSize: "0.65rem",
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            color: `${accent.glow}0.55)`,
+            marginBottom: 4,
+            textShadow: TEXT_SHADOW,
+          }}>
+            ✦ cốt truyện
+          </p>
+          <h3 style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontWeight: 600,
+            fontSize: "1.15rem",
+            color: "rgba(240,244,255,0.92)",
+            letterSpacing: "0.02em",
+            textShadow: `${TEXT_SHADOW}, 0 0 20px ${accent.glow}0.3)`,
+            margin: 0,
+            wordBreak: "break-word",
+          }}>
+            {title}
+          </h3>
+        </div>
+
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          aria-label="Đóng"
+          style={{
+            position: "absolute",
+            top: 14,
+            right: 14,
+            width: 28,
+            height: 28,
+            borderRadius: "50%",
+            background: "rgba(197,168,255,0.07)",
+            border: "1px solid rgba(197,168,255,0.16)",
+            color: "rgba(197,168,255,0.55)",
+            fontSize: "12px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            touchAction: "manipulation",
+            flexShrink: 0,
+          }}
+        >
+          ✕
+        </button>
+
+        {/* Scrollable body */}
+        <div style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "16px 24px 24px",
+        }}>
+          <p style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontWeight: 400,
+            fontSize: "0.95rem",
+            color: "rgba(220,210,255,0.88)",
+            lineHeight: 1.85,
+            margin: 0,
+            /* Preserve every whitespace and newline exactly as entered */
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+            textShadow: TEXT_SHADOW,
+          }}>
+            {plot || <em style={{ color: "rgba(197,168,255,0.35)" }}>Chưa có cốt truyện.</em>}
+          </p>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 /* ─── Artwork card ────────────────────────────────────────────── */
 interface ArtworkCellProps {
   artwork: Artwork;
@@ -93,6 +234,7 @@ interface ArtworkCellProps {
 const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: ArtworkCellProps) {
   const [liking, setLiking]  = useState(false);
   const [burst, setBurst]    = useState<{ id: number; angle: number; color: string; dist: number; size: number }[]>([]);
+  const [plotOpen, setPlotOpen] = useState(false);
 
   let hostname = "";
   try { hostname = new URL(artwork.link).hostname; } catch { hostname = artwork.link; }
@@ -124,113 +266,181 @@ const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: Artwo
     if (!isValidUrl) { e.preventDefault(); toast.error("Link không hợp lệ"); }
   };
 
+  const handleGgai = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isValidUrl) { toast.error("Link không hợp lệ"); return; }
+    window.open(artwork.link, "_blank", "noopener,noreferrer");
+  };
+
+  const handlePlot = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPlotOpen(true);
+  };
+
+  /* Mini glassmorphism button style */
+  const miniBtnBase: React.CSSProperties = {
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    fontWeight: 400,
+    fontSize: "0.68rem",
+    letterSpacing: "0.1em",
+    padding: "3px 10px",
+    borderRadius: "20px",
+    cursor: "pointer",
+    background: "rgba(255,255,255,0.04)",
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)",
+    border: `1px solid ${accent.border}0.22)`,
+    color: `${accent.glow}0.72)`,
+    textShadow: TEXT_SHADOW,
+    touchAction: "manipulation",
+    WebkitTapHighlightColor: "transparent",
+    transition: "background 0.18s, border-color 0.18s",
+    flexShrink: 0,
+  };
+
   return (
-    <div
-      className="group relative"
-      style={{
-        background: "transparent",
-        border: "1px solid rgba(255,255,255,0.1)",
-        borderRadius: "20px",
-        transition: "border-color 0.3s",
-      }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = `${accent.border}0.25)`; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.1)"; }}
-    >
-      {/* Hover glow */}
+    <>
       <div
-        className="absolute inset-0 rounded-[20px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ background: `linear-gradient(to top, ${accent.glow}0.08) 0%, transparent 70%)`, zIndex: 0 }}
-      />
-
-      <a
-        href={isValidUrl ? artwork.link : undefined}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={handleLinkClick}
-        className="block p-4"
-        style={{ zIndex: 1, position: "relative", cursor: isValidUrl ? "pointer" : "default" }}
+        className="group relative"
+        style={{
+          background: "transparent",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "20px",
+          transition: "border-color 0.3s",
+        }}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = `${accent.border}0.25)`; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.1)"; }}
       >
-        <h3
-          className="leading-snug mb-1.5"
-          style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontWeight: 700,
-            fontSize: "clamp(0.95rem, 1.5vw, 1.15rem)",
-            color: "#ffffff",
-            textShadow: `${TEXT_SHADOW}, 0 0 18px ${accent.glow}0.35)`,
-            letterSpacing: "0.015em",
-            wordBreak: "break-word",
-          }}
-        >
-          {artwork.title}
-        </h3>
+        {/* Hover glow */}
+        <div
+          className="absolute inset-0 rounded-[20px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          style={{ background: `linear-gradient(to top, ${accent.glow}0.08) 0%, transparent 70%)`, zIndex: 0 }}
+        />
 
-        {artwork.description && (
-          <p
-            className="mb-3 leading-relaxed"
+        <a
+          href={isValidUrl ? artwork.link : undefined}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={handleLinkClick}
+          className="block p-4"
+          style={{ zIndex: 1, position: "relative", cursor: isValidUrl ? "pointer" : "default" }}
+        >
+          <h3
+            className="leading-snug mb-1.5"
             style={{
               fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontStyle: "italic",
-              fontWeight: 500,
-              fontSize: "clamp(0.74rem, 1.1vw, 0.84rem)",
-              color: "rgba(220,200,255,0.9)",
-              lineHeight: 1.55,
+              fontWeight: 700,
+              fontSize: "clamp(0.95rem, 1.5vw, 1.15rem)",
+              color: "#ffffff",
+              textShadow: `${TEXT_SHADOW}, 0 0 18px ${accent.glow}0.35)`,
+              letterSpacing: "0.015em",
               wordBreak: "break-word",
-              textShadow: TEXT_SHADOW,
             }}
           >
-            {artwork.description}
-          </p>
-        )}
+            {artwork.title}
+          </h3>
 
-        <div className="flex items-center justify-between gap-2 mt-auto pt-1">
-          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-            <div
-              className="rounded-full shrink-0"
-              style={{ width: 3, height: 3, background: `${accent.border}0.6)`, boxShadow: `0 0 4px ${accent.glow}0.4)` }}
-            />
-            <span
-              className="truncate"
-              style={{ color: "rgba(150,190,210,0.4)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "0.66rem", letterSpacing: "0.03em" }}
+          {artwork.description && (
+            <p
+              className="mb-3 leading-relaxed"
+              style={{
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontStyle: "italic",
+                fontWeight: 500,
+                fontSize: "clamp(0.74rem, 1.1vw, 0.84rem)",
+                color: "rgba(220,200,255,0.9)",
+                lineHeight: 1.55,
+                wordBreak: "break-word",
+                textShadow: TEXT_SHADOW,
+              }}
             >
-              {isValidUrl ? hostname : "link không hợp lệ"}
-            </span>
+              {artwork.description}
+            </p>
+          )}
+
+          {/* ggai + plot buttons */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+            <button
+              onClick={handleGgai}
+              style={miniBtnBase}
+              onMouseEnter={(e) => { e.currentTarget.style.background = `${accent.glow}0.12)`; e.currentTarget.style.borderColor = `${accent.border}0.44)`; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor = `${accent.border}0.22)`; }}
+            >
+              ggai
+            </button>
+            <button
+              onClick={handlePlot}
+              style={miniBtnBase}
+              onMouseEnter={(e) => { e.currentTarget.style.background = `${accent.glow}0.12)`; e.currentTarget.style.borderColor = `${accent.border}0.44)`; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor = `${accent.border}0.22)`; }}
+            >
+              plot
+            </button>
           </div>
 
-          {/* Like button */}
-          <div className="relative shrink-0">
-            <AnimatePresence>
-              {burst.map((p) => (
-                <motion.div
-                  key={p.id}
-                  className="absolute rounded-full pointer-events-none"
-                  style={{ width: p.size, height: p.size, background: p.color, boxShadow: `0 0 ${p.size * 3}px ${p.color}`, left: "50%", top: "50%", translateX: "-50%", translateY: "-50%" }}
-                  initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-                  animate={{ x: Math.cos(p.angle) * p.dist, y: Math.sin(p.angle) * p.dist, opacity: 0, scale: 0 }}
-                  exit={{}}
-                  transition={{ duration: 0.6, ease: "easeOut" }}
-                />
-              ))}
-            </AnimatePresence>
-            <motion.button
-              onClick={handleLike}
-              className="flex items-center gap-1.5 relative z-10 py-1 px-1"
-              style={{ color: artwork.likes > 0 ? "rgba(255,155,195,0.95)" : "rgba(197,168,255,0.5)", background: "none", border: "none", cursor: "pointer", touchAction: "manipulation" }}
-              animate={liking ? { scale: [1, 1.6, 0.85, 1.25, 1], rotate: [0, -10, 10, -4, 0] } : {}}
-              whileTap={{ scale: 0.78 }}
-              transition={{ duration: 0.55 }}
-              disabled={liking}
-              aria-label="Thích"
-            >
-              <span style={{ fontSize: "14px", lineHeight: 1, filter: artwork.likes > 0 ? "drop-shadow(0 0 6px rgba(78,205,196,0.9))" : "none" }}>🪼</span>
-              <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 400, fontSize: "0.8rem", textShadow: TEXT_SHADOW }}>
-                {artwork.likes}
+          <div className="flex items-center justify-between gap-2 mt-auto pt-1">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <div
+                className="rounded-full shrink-0"
+                style={{ width: 3, height: 3, background: `${accent.border}0.6)`, boxShadow: `0 0 4px ${accent.glow}0.4)` }}
+              />
+              <span
+                className="truncate"
+                style={{ color: "rgba(150,190,210,0.4)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "0.66rem", letterSpacing: "0.03em" }}
+              >
+                {isValidUrl ? hostname : "link không hợp lệ"}
               </span>
-            </motion.button>
+            </div>
+
+            {/* Like button */}
+            <div className="relative shrink-0">
+              <AnimatePresence>
+                {burst.map((p) => (
+                  <motion.div
+                    key={p.id}
+                    className="absolute rounded-full pointer-events-none"
+                    style={{ width: p.size, height: p.size, background: p.color, boxShadow: `0 0 ${p.size * 3}px ${p.color}`, left: "50%", top: "50%", translateX: "-50%", translateY: "-50%" }}
+                    initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                    animate={{ x: Math.cos(p.angle) * p.dist, y: Math.sin(p.angle) * p.dist, opacity: 0, scale: 0 }}
+                    exit={{}}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  />
+                ))}
+              </AnimatePresence>
+              <motion.button
+                onClick={handleLike}
+                className="flex items-center gap-1.5 relative z-10 py-1 px-1"
+                style={{ color: artwork.likes > 0 ? "rgba(255,155,195,0.95)" : "rgba(197,168,255,0.5)", background: "none", border: "none", cursor: "pointer", touchAction: "manipulation" }}
+                animate={liking ? { scale: [1, 1.6, 0.85, 1.25, 1], rotate: [0, -10, 10, -4, 0] } : {}}
+                whileTap={{ scale: 0.78 }}
+                transition={{ duration: 0.55 }}
+                disabled={liking}
+                aria-label="Thích"
+              >
+                <span style={{ fontSize: "14px", lineHeight: 1, filter: artwork.likes > 0 ? "drop-shadow(0 0 6px rgba(78,205,196,0.9))" : "none" }}>🪼</span>
+                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 400, fontSize: "0.8rem", textShadow: TEXT_SHADOW }}>
+                  {artwork.likes}
+                </span>
+              </motion.button>
+            </div>
           </div>
-        </div>
-      </a>
-    </div>
+        </a>
+      </div>
+
+      {/* Plot modal — rendered outside the card to avoid stacking context issues */}
+      <AnimatePresence>
+        {plotOpen && (
+          <PlotModal
+            title={artwork.title}
+            plot={artwork.plot ?? ""}
+            accent={accent}
+            onClose={() => setPlotOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 });
 

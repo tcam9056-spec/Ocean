@@ -7,6 +7,7 @@ export const artworksTable = pgTable("artworks", {
   title: text("title").notNull(),
   description: text("description").notNull().default(""),
   link: text("link").notNull(),
+  plot: text("plot").notNull().default(""),
   likesCount: integer("likes_count").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
