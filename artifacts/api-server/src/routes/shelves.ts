@@ -52,8 +52,8 @@ router.get("/shelves", async (req, res): Promise<void> => {
     res.setHeader("Cache-Control", "public, max-age=10, stale-while-revalidate=30");
     res.json([...seen.values()]);
   } catch (err) {
-    req.log.error({ err }, "GET /shelves failed");
-    throw err;
+    req.log.error({ err }, "GET /shelves failed — trả về mảng rỗng để tránh sập app");
+    res.status(200).json([]);
   }
 });
 
