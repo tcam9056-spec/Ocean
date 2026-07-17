@@ -109,152 +109,41 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 500,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "24px 20px",
-        background: "rgba(0,6,22,0.55)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
-      }}
+      className="plot-overlay"
     >
       <motion.div
-        initial={{ scale: 0.9, y: 28, opacity: 0 }}
+        initial={{ scale: 0.92, y: 24, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
-        exit={{ scale: 0.9, y: 28, opacity: 0 }}
+        exit={{ scale: 0.92, y: 24, opacity: 0 }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        className="plot-modal-glass"
-        style={{
-          position: "relative",
-          width: "100%",
-          maxWidth: 600,
-          maxHeight: "82vh",
-          display: "flex",
-          flexDirection: "column",
-        }}
+        className="plot-modal"
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Accent glow strip at top */}
-        <div style={{
-          position: "absolute",
-          top: 0, left: "10%", right: "10%",
-          height: 1,
-          background: `linear-gradient(90deg, transparent, ${accent.glow}, transparent)`,
-          borderRadius: "50%",
-          opacity: 0.8,
-        }} />
+        {/* Nút đóng */}
+        <button className="plot-close-btn" onClick={onClose} aria-label="Đóng">✕</button>
 
         {/* Header */}
-        <div style={{
-          padding: "26px 56px 18px 28px",
-          borderBottom: "1px solid rgba(255,255,255,0.1)",
-          flexShrink: 0,
-        }}>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginBottom: 8,
-          }}>
-            <span style={{ fontSize: "16px", lineHeight: 1 }}>🐳</span>
-            <span style={{
-              fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontWeight: 300,
-              fontStyle: "italic",
-              fontSize: "0.62rem",
-              letterSpacing: "0.28em",
-              textTransform: "uppercase",
-              color: accent.glow,
-              textShadow: `0 0 12px ${accent.glow}`,
-            }}>
+        <div className="plot-header">
+          <div className="plot-label">
+            <span style={{ fontSize: "16px" }}>🐳</span>
+            <span style={{ color: accent.glow, textShadow: `0 0 10px ${accent.glow}` }}>
               cốt truyện
             </span>
           </div>
-          <h3 style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontWeight: 600,
-            fontStyle: "italic",
-            fontSize: "1.35rem",
-            color: "rgba(255,255,255,0.97)",
-            letterSpacing: "0.03em",
-            textShadow: "0 2px 8px rgba(0,0,0,0.5)",
-            margin: 0,
-            wordBreak: "break-word",
-            lineHeight: 1.3,
-          }}>
-            {title}
-          </h3>
+          <h3 className="plot-title">{title}</h3>
         </div>
 
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          aria-label="Đóng"
-          style={{
-            position: "absolute",
-            top: 16,
-            right: 16,
-            width: 32,
-            height: 32,
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.1)",
-            border: "1px solid rgba(255,255,255,0.25)",
-            color: "rgba(255,255,255,0.65)",
-            fontSize: "13px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            touchAction: "manipulation",
-            flexShrink: 0,
-            transition: "all 0.18s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(255,255,255,0.22)";
-            e.currentTarget.style.color = "rgba(255,255,255,0.95)";
-            e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-            e.currentTarget.style.color = "rgba(255,255,255,0.65)";
-            e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)";
-          }}
-        >
-          ✕
-        </button>
-
-        {/* Scrollable body */}
-        <div
-          className="plot-modal-body"
-          style={{ flex: 1, overflowY: "auto", padding: "28px 32px 40px", willChange: "transform" }}
-        >
+        {/* Nội dung cuộn */}
+        <div className="plot-body">
           {plot ? (
-            <div className="plot-modal-content" dangerouslySetInnerHTML={{ __html: plot }} />
+            <div className="plot-content" dangerouslySetInnerHTML={{ __html: plot }} />
           ) : (
-            <p style={{
-              fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontStyle: "italic",
-              color: "rgba(255,255,255,0.35)",
-              fontSize: "1rem",
-              margin: 0,
-            }}>
-              Chưa có cốt truyện.
-            </p>
+            <p className="plot-empty">Chưa có cốt truyện.</p>
           )}
         </div>
 
-        {/* Bottom fade */}
-        <div style={{
-          position: "absolute",
-          bottom: 0, left: 0, right: 0,
-          height: 48,
-          background: "linear-gradient(to top, rgba(8,16,40,0.6), transparent)",
-          borderRadius: "0 0 24px 24px",
-          pointerEvents: "none",
-        }} />
+        {/* Fade cuối */}
+        <div className="plot-fade-bottom" />
       </motion.div>
     </motion.div>
   );
