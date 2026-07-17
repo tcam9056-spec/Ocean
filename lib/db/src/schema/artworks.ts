@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, index } from "drizzle-orm/pg-core";
 import { shelvesTable } from "./shelves";
 
 export const artworksTable = pgTable("artworks", {
@@ -9,4 +9,6 @@ export const artworksTable = pgTable("artworks", {
   link: text("link").notNull(),
   likesCount: integer("likes_count").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (t) => [
+  index("artworks_shelf_id_idx").on(t.shelfId),
+]);

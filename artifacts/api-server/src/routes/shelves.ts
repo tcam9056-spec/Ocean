@@ -5,39 +5,50 @@ import { db, shelvesTable, artworksTable } from "@workspace/db";
 const router = Router();
 
 /* ─── GET /shelves ─────────────────────────────────────────────── */
+// Single LEFT JOIN query instead of two round-trips; results grouped in JS.
 router.get("/shelves", async (req, res): Promise<void> => {
   try {
-    const shelves = await db
-      .select()
+    const rows = await db
+      .select({
+        shelfId:          shelvesTable.id,
+        shelfName:        shelvesTable.shelfName,
+        shelfCreatedAt:   shelvesTable.createdAt,
+        artworkId:        artworksTable.id,
+        artworkTitle:     artworksTable.title,
+        artworkDesc:      artworksTable.description,
+        artworkLink:      artworksTable.link,
+        artworkLikes:     artworksTable.likesCount,
+        artworkCreatedAt: artworksTable.createdAt,
+      })
       .from(shelvesTable)
-      .orderBy(asc(shelvesTable.createdAt));
+      .leftJoin(artworksTable, eq(artworksTable.shelfId, shelvesTable.id))
+      .orderBy(asc(shelvesTable.createdAt), asc(artworksTable.createdAt));
 
-    const artworks = await db
-      .select()
-      .from(artworksTable)
-      .orderBy(asc(artworksTable.createdAt));
-
-    const artworksByShelf = new Map<number, typeof artworks>();
-    for (const a of artworks) {
-      if (!artworksByShelf.has(a.shelfId)) artworksByShelf.set(a.shelfId, []);
-      artworksByShelf.get(a.shelfId)!.push(a);
+    // Group into shelf → artworks map (preserving shelf order)
+    const seen = new Map<number, { id: string; shelfName: string; createdAt: number; artworks: object[] }>();
+    for (const r of rows) {
+      if (!seen.has(r.shelfId)) {
+        seen.set(r.shelfId, {
+          id: String(r.shelfId),
+          shelfName: r.shelfName,
+          createdAt: r.shelfCreatedAt.getTime(),
+          artworks: [],
+        });
+      }
+      if (r.artworkId !== null) {
+        seen.get(r.shelfId)!.artworks.push({
+          id:          String(r.artworkId),
+          title:       r.artworkTitle!,
+          description: r.artworkDesc ?? "",
+          link:        r.artworkLink!,
+          likes:       r.artworkLikes ?? 0,
+          createdAt:   r.artworkCreatedAt!.getTime(),
+        });
+      }
     }
 
-    res.json(
-      shelves.map((s) => ({
-        id: String(s.id),
-        shelfName: s.shelfName,
-        createdAt: s.createdAt.getTime(),
-        artworks: (artworksByShelf.get(s.id) ?? []).map((a) => ({
-          id: String(a.id),
-          title: a.title,
-          description: a.description,
-          link: a.link,
-          likes: a.likesCount,
-          createdAt: a.createdAt.getTime(),
-        })),
-      }))
-    );
+    res.setHeader("Cache-Control", "public, max-age=10, stale-while-revalidate=30");
+    res.json([...seen.values()]);
   } catch (err) {
     req.log.error({ err }, "GET /shelves failed");
     throw err;

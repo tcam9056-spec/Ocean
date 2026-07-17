@@ -19,6 +19,7 @@ router.get("/links", async (req, res): Promise<void> => {
     .from(showcaseLinksTable)
     .orderBy(sql`${showcaseLinksTable.createdAt} DESC`);
 
+  res.setHeader("Cache-Control", "public, max-age=10, stale-while-revalidate=30");
   res.json(
     ListLinksResponse.parse(
       links.map((l) => ({
@@ -112,20 +113,20 @@ router.post("/links/:id/like", async (req, res): Promise<void> => {
   );
 });
 
+/* ─── GET /links/stats ─────────────────────────────────────────── */
+// Single aggregation query instead of full table scan + JS reduce.
 router.get("/links/stats", async (_req, res): Promise<void> => {
-  const links = await db.select().from(showcaseLinksTable);
-
-  const totalLinks = links.length;
-
-  const totalLikes = links.reduce(
-    (acc, link) => acc + (link.likesCount ?? 0),
-    0
-  );
+  const [stats] = await db
+    .select({
+      totalLinks: sql<number>`count(*)::int`,
+      totalLikes: sql<number>`coalesce(sum(${showcaseLinksTable.likesCount}), 0)::int`,
+    })
+    .from(showcaseLinksTable);
 
   res.json(
     GetLinksStatsResponse.parse({
-      totalLinks,
-      totalLikes,
+      totalLinks: stats?.totalLinks ?? 0,
+      totalLikes: stats?.totalLikes ?? 0,
     })
   );
 });

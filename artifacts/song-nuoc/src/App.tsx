@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, memo } from "react";
+import { useRef, useState, useEffect, memo, useCallback, lazy, Suspense } from "react";
 import { Toaster } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -6,8 +6,13 @@ import { OceanBackground } from "@/components/OceanBackground";
 import { SplashScreen } from "@/components/SplashScreen";
 import { ShowcaseShelf } from "@/components/ShowcaseShelf";
 import { StatsBar } from "@/components/StatsBar";
-import { AdminPanel } from "@/components/AdminPanel";
 import { useShelvesStore } from "@/hooks/useShelvesStore";
+
+// AdminPanel is 1000+ lines and only used by admins — lazy-load it
+// so it doesn't inflate the initial bundle for regular visitors.
+const AdminPanel = lazy(() =>
+  import("@/components/AdminPanel").then((m) => ({ default: m.AdminPanel }))
+);
 
 /* ─── Audio source ────────────────────────────────────────────── */
 const AUDIO_SRC = "/bg-music.mp3";
@@ -72,17 +77,19 @@ function OceanApp() {
     };
   }, []);
 
-  const handleMuteToggle = () => {
+  const handleMuteToggle = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (isMuted) {
-      audio.muted = false;
-      audio.play().catch(() => {});
-    } else {
-      audio.muted = true;
-    }
-    setIsMuted(!isMuted);
-  };
+    setIsMuted((prev) => {
+      if (prev) {
+        audio.muted = false;
+        audio.play().catch(() => {});
+      } else {
+        audio.muted = true;
+      }
+      return !prev;
+    });
+  }, []);
 
   return (
     <div className="ocean-root">
@@ -211,17 +218,19 @@ function OceanApp() {
         )}
       </AnimatePresence>
 
-      <AdminPanel
-        isAdmin={isAdmin}
-        setIsAdmin={setIsAdmin}
-        shelves={store.shelves}
-        onCreateShelf={store.createShelf}
-        onRenameShelf={store.renameShelf}
-        onDeleteShelf={store.deleteShelf}
-        onAddArtwork={store.addArtwork}
-        onUpdateArtwork={store.updateArtwork}
-        onDeleteArtwork={store.deleteArtwork}
-      />
+      <Suspense fallback={null}>
+        <AdminPanel
+          isAdmin={isAdmin}
+          setIsAdmin={setIsAdmin}
+          shelves={store.shelves}
+          onCreateShelf={store.createShelf}
+          onRenameShelf={store.renameShelf}
+          onDeleteShelf={store.deleteShelf}
+          onAddArtwork={store.addArtwork}
+          onUpdateArtwork={store.updateArtwork}
+          onDeleteArtwork={store.deleteArtwork}
+        />
+      </Suspense>
 
       <Toaster
         position="bottom-center"
