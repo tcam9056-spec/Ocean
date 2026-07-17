@@ -148,6 +148,8 @@ export function MermaidSilhouette({ id, direction, duration, yOffset, top, opaci
         top,
         filter: "drop-shadow(0 0 18px rgba(0,200,220,0.7)) drop-shadow(0 0 40px rgba(0,150,200,0.4))",
         opacity,
+        willChange: "transform",
+        contain: "paint",
       }}
       animate={{
         x: isRtl

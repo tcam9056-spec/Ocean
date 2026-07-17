@@ -300,7 +300,7 @@ function FloatingJellyfishLayer() {
 
 export function OceanBackground() {
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none" style={{ contain: "paint" }}>
       {/* Cinematic video background */}
       <video
         autoPlay
@@ -353,22 +353,22 @@ export function OceanBackground() {
       />
 
       {/* SVG fish swimming */}
-      <div className="absolute inset-0" style={{ zIndex: 2, overflow: "hidden" }}>
+      <div className="absolute inset-0" style={{ zIndex: 2, overflow: "hidden", contain: "paint layout" }}>
         <FloatingFishLayer />
       </div>
 
       {/* SVG jellyfish drifting */}
-      <div className="absolute inset-0" style={{ zIndex: 2, overflow: "hidden" }}>
+      <div className="absolute inset-0" style={{ zIndex: 2, overflow: "hidden", contain: "paint layout" }}>
         <FloatingJellyfishLayer />
       </div>
 
       {/* Floating bubbles */}
-      <div className="absolute inset-0" style={{ zIndex: 2, overflow: "hidden" }}>
+      <div className="absolute inset-0" style={{ zIndex: 2, overflow: "hidden", contain: "paint layout" }}>
         <FloatingBubbles />
       </div>
 
       {/* Bio-luminescent particles */}
-      <div className="absolute inset-0" style={{ zIndex: 3 }}>
+      <div className="absolute inset-0" style={{ zIndex: 3, contain: "paint layout" }}>
         <BioLuminParticles />
       </div>
 

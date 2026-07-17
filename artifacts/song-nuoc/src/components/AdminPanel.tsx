@@ -561,7 +561,7 @@ function ShelfDetail({ shelf, onBack, onRename, onAdd, onUpdate, onDelete }: She
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "12px 20px 20px" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px 20px 20px", WebkitOverflowScrolling: "touch", overscrollBehaviorY: "contain" }}>
         {/* Add form */}
         <AnimatePresence>
           {addingNew && (
@@ -698,7 +698,7 @@ function ShelfList({ shelves, onSelectShelf, onCreateShelf, onDeleteShelf, onRen
       </div>
 
       {/* Body */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "12px 20px 20px" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px 20px 20px", WebkitOverflowScrolling: "touch", overscrollBehaviorY: "contain" }}>
         {/* Create form */}
         <AnimatePresence>
           {creating && (

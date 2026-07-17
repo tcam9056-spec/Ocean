@@ -58,6 +58,7 @@ export function SplashScreen({ onEnter, audioRef }: SplashScreenProps) {
           onClick={handleClick}
           exit={{ opacity: 0 }}
           transition={{ duration: 2.4, ease: "easeInOut" }}
+          style={{ contain: "paint layout" }}
         >
 
           {/* Dark overlay */}

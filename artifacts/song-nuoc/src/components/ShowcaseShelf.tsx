@@ -236,6 +236,7 @@ const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: Artwo
           transition: "transform 0.3s, opacity 0.3s",
           transform: "translateZ(0)",
           backfaceVisibility: "hidden" as const,
+          contain: "paint layout",
         }}
         onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = `${accent.border}0.25)`; }}
         onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.1)"; }}
@@ -281,7 +282,8 @@ const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: Artwo
                 lineHeight: 1.55,
                 wordBreak: "break-word",
                 textShadow: TEXT_SHADOW,
-              }}
+                textRendering: "optimizeSpeed",
+              } as React.CSSProperties}
             >
               {artwork.description}
             </p>

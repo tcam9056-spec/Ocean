@@ -287,6 +287,17 @@
   contain: paint layout;
   /* Chỉ render những card đang trong viewport */
   content-visibility: auto;
+  /* Cuộn mượt trên iOS/Android — không lan sang trang ngoài */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* Thanh cuộn webkit — mỏng, nhẹ, không giật frame */
+.shelf-artwork-scroll::-webkit-scrollbar { width: 2px; }
+.shelf-artwork-scroll::-webkit-scrollbar-track { background: transparent; }
+.shelf-artwork-scroll::-webkit-scrollbar-thumb {
+  background: rgba(197,168,255,0.25);
+  border-radius: 999px;
 }
 
 /* Pagination row */
@@ -309,6 +320,7 @@
   .ocean-scroll-container {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
 
   /* Smaller bubble button so it fits beside the search bar    */
@@ -641,7 +653,7 @@
   font-weight: 300;
   line-height: 1.85;
   word-break: break-word;
-  text-rendering: optimizeLegibility;
+  text-rendering: optimizeSpeed;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
 }
 .plot-content p { margin: 0 0 0.9em; }

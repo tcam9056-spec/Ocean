@@ -187,6 +187,7 @@ export function LinkCard({ link, isAdmin, cardIndex }: LinkCardProps) {
               inset 0 1px 0 rgba(240,244,255,0.09)
             `,
             willChange: "transform, border-radius, box-shadow",
+            contain: "paint layout",
           }}
           data-testid={`link-card-${link.id}`}
         >
@@ -287,7 +288,8 @@ export function LinkCard({ link, isAdmin, cardIndex }: LinkCardProps) {
                   color: "rgba(197,168,255,0.78)",
                   lineHeight: 1.65,
                   marginBottom: "1rem",
-                }}
+                  textRendering: "optimizeSpeed",
+                } as React.CSSProperties}
                 animate={{ y: [0, -3, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               >
