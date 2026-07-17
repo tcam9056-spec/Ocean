@@ -14,6 +14,9 @@ const NEON = [
   { glow: "rgba(160,240,220,",  border: "rgba(160,240,220,"  },
 ];
 
+/* ─── Ocean divider strip ─────────────────────────────────────── */
+const OCEAN_STRIP = "༄ ⋆ ˚ ｡ ° 𓆉 𓆝 𓆟 〰 ≋ ࿐";
+
 /* ─── SearchBar ────────────────────────────────────────────────── */
 function SearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
@@ -231,145 +234,157 @@ function ArtworkCell({ artwork, accent, onLike }: ArtworkCellProps) {
   );
 }
 
-/* ─── Shelf Directory Modal ───────────────────────────────────── */
-interface ShelfDirectoryProps {
+/* ─── Shelf Dropdown ──────────────────────────────────────────── */
+interface ShelfDropdownProps {
   shelves: Shelf[];
   currentIndex: number;
   onSelect: (idx: number) => void;
   onClose: () => void;
 }
 
-function ShelfDirectory({ shelves, currentIndex, onSelect, onClose }: ShelfDirectoryProps) {
-  const nonEmpty = shelves.filter((s) => s.artworks.length > 0);
-  const backdropRef = useRef<HTMLDivElement>(null);
+function ShelfDropdown({ shelves, currentIndex, onSelect, onClose }: ShelfDropdownProps) {
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const dropRef = useRef<HTMLDivElement>(null);
 
+  /* Close on outside click */
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const handler = (e: MouseEvent) => {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) onClose();
+    };
+    const keyHandler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("mousedown", handler);
+    window.addEventListener("keydown", keyHandler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      window.removeEventListener("keydown", keyHandler);
+    };
   }, [onClose]);
 
   return (
     <motion.div
-      ref={backdropRef}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
+      ref={dropRef}
+      initial={{ opacity: 0, y: -8, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.97 }}
+      transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
       style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.55)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
-        zIndex: 200,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "24px",
+        position: "absolute",
+        top: "calc(100% + 10px)",
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 300,
+        minWidth: 260,
+        maxWidth: 340,
+        width: "max-content",
+        background: "transparent",
+        backdropFilter: "blur(2px)",
+        WebkitBackdropFilter: "blur(2px)",
       }}
     >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.92, y: 16 }}
-        animate={{ opacity: 1, scale: 1,    y: 0  }}
-        exit={{ opacity: 0, scale: 0.92, y: 16 }}
-        transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
-        style={{
-          background: "rgba(8,18,42,0.82)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          border: "1px solid rgba(197,168,255,0.2)",
-          borderRadius: "20px",
-          padding: "28px 24px",
-          width: "100%",
-          maxWidth: 380,
-          maxHeight: "70vh",
-          overflowY: "auto",
-          boxShadow: "0 24px 64px rgba(0,0,10,0.6)",
-        }}
-      >
-        {/* Modal title */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-          <h2 style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontWeight: 500,
-            fontSize: "1.1rem",
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: "rgba(197,168,255,0.9)",
-            textShadow: TEXT_SHADOW,
-          }}>
-            ✦ Danh mục Kệ
-          </h2>
-          <button
-            onClick={onClose}
-            style={{ background: "none", border: "none", color: "rgba(197,168,255,0.4)", fontSize: "18px", cursor: "pointer", padding: "4px 8px", lineHeight: 1 }}
-            aria-label="Đóng"
-          >✕</button>
-        </div>
+      {/* Top ocean divider */}
+      <div style={{
+        textAlign: "center",
+        color: "rgba(255,255,255,0.75)",
+        fontSize: "13px",
+        letterSpacing: "2px",
+        paddingBottom: "10px",
+        userSelect: "none",
+        textShadow: "0 0 8px rgba(255,255,255,0.6)",
+        lineHeight: 1.6,
+      }}>
+        {OCEAN_STRIP}
+      </div>
 
-        {/* Ocean divider */}
-        <div style={{ textAlign: "center", color: "rgba(255,255,255,0.35)", fontSize: "14px", letterSpacing: "3px", marginBottom: "18px", userSelect: "none" }}>
-          𓆝 𓆟 𓆞 𓇼
-        </div>
+      {/* Shelf list */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "2px", padding: "0 4px" }}>
+        {shelves.map((shelf, idx) => {
+          const isActive = idx === currentIndex;
+          const isHovered = hoveredId === shelf.id;
+          return (
+            <motion.button
+              key={shelf.id}
+              onClick={() => { onSelect(idx); onClose(); }}
+              onMouseEnter={() => setHoveredId(shelf.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              whileTap={{ scale: 0.97 }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "10px 16px",
+                borderRadius: "10px",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                textAlign: "left",
+                width: "100%",
+              }}
+            >
+              {/* Active dot */}
+              <motion.div
+                style={{
+                  width: 5, height: 5, borderRadius: "50%", flexShrink: 0,
+                  background: isActive ? "rgba(78,205,196,0.9)" : `${NEON[idx % NEON.length].border}0.45)`,
+                  boxShadow: isActive ? "0 0 8px rgba(78,205,196,0.7)" : "none",
+                  transition: "all 0.2s",
+                }}
+                animate={isActive ? { opacity: [0.5, 1, 0.5] } : {}}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
 
-        {nonEmpty.length === 0 ? (
-          <p style={{ textAlign: "center", color: "rgba(197,168,255,0.35)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic" }}>
-            Chưa có kệ nào
-          </p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {nonEmpty.map((shelf, idx) => {
-              const isActive = idx === currentIndex;
-              return (
-                <motion.button
-                  key={shelf.id}
-                  onClick={() => { onSelect(idx); onClose(); }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    padding: "12px 16px",
-                    borderRadius: "12px",
-                    background: isActive ? "rgba(78,205,196,0.08)" : "transparent",
-                    border: `1px solid ${isActive ? "rgba(78,205,196,0.3)" : "rgba(255,255,255,0.06)"}`,
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "all 0.2s",
-                    width: "100%",
-                  }}
-                >
-                  <motion.div
+              {/* Shelf name */}
+              <span style={{
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontWeight: isActive ? 600 : 400,
+                fontSize: "1rem",
+                letterSpacing: "0.08em",
+                color: "#ffffff",
+                textShadow: "1px 1px 3px black, 0 0 12px rgba(0,0,0,0.8)",
+                flex: 1,
+                transition: "all 0.2s",
+              }}>
+                {shelf.shelfName}
+              </span>
+
+              {/* Hover icon cluster */}
+              <AnimatePresence>
+                {isHovered && (
+                  <motion.span
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -6 }}
+                    transition={{ duration: 0.18 }}
                     style={{
-                      width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
-                      background: isActive ? "rgba(78,205,196,0.9)" : `${NEON[idx % NEON.length].border}0.5)`,
-                      boxShadow: isActive ? "0 0 8px rgba(78,205,196,0.7)" : "none",
+                      fontSize: "13px",
+                      color: "rgba(255,255,255,0.8)",
+                      textShadow: "0 0 8px rgba(255,255,255,0.5)",
+                      letterSpacing: "1px",
+                      flexShrink: 0,
+                      userSelect: "none",
                     }}
-                    animate={isActive ? { opacity: [0.5, 1, 0.5] } : {}}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  <span style={{
-                    fontFamily: "'Cormorant Garamond', Georgia, serif",
-                    fontWeight: isActive ? 600 : 400,
-                    fontSize: "0.95rem",
-                    letterSpacing: "0.06em",
-                    color: isActive ? "rgba(78,205,196,0.95)" : "rgba(240,244,255,0.75)",
-                    textShadow: TEXT_SHADOW,
-                    flex: 1,
-                  }}>
-                    {shelf.shelfName}
-                  </span>
-                  <span style={{ color: "rgba(197,168,255,0.35)", fontSize: "0.72rem", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
-                    {shelf.artworks.length} tác phẩm
-                  </span>
-                </motion.button>
-              );
-            })}
-          </div>
-        )}
-      </motion.div>
+                  >
+                    𓆝 𓆟 ⊹ ࣪ ˖
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Bottom ocean divider */}
+      <div style={{
+        textAlign: "center",
+        color: "rgba(255,255,255,0.75)",
+        fontSize: "13px",
+        letterSpacing: "2px",
+        paddingTop: "10px",
+        userSelect: "none",
+        textShadow: "0 0 8px rgba(255,255,255,0.6)",
+        lineHeight: 1.6,
+      }}>
+        {OCEAN_STRIP}
+      </div>
     </motion.div>
   );
 }
@@ -383,15 +398,16 @@ interface ShowcaseShelfProps {
 }
 
 export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: ShowcaseShelfProps) {
-  const [shelfIndex, setShelfIndex]     = useState(0);
-  const [dirOpen, setDirOpen]           = useState(false);
+  const [shelfIndex, setShelfIndex] = useState(0);
+  const [dropOpen, setDropOpen]     = useState(false);
+  const menuWrapRef = useRef<HTMLDivElement>(null);
   const q = search.trim().toLowerCase();
 
   /* Non-empty shelves */
   const nonEmpty = useMemo(() => shelves.filter((s) => s.artworks.length > 0), [shelves]);
 
   /* Clamp shelfIndex */
-  const safeIdx     = Math.min(shelfIndex, Math.max(0, nonEmpty.length - 1));
+  const safeIdx      = Math.min(shelfIndex, Math.max(0, nonEmpty.length - 1));
   const currentShelf = nonEmpty[safeIdx] ?? null;
 
   /* Search mode: flatten + filter across all shelves */
@@ -417,8 +433,11 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
   /* Reset shelf to 0 when search is cleared */
   useEffect(() => { if (!q) setShelfIndex(0); }, [q]);
 
-  const isEmpty    = shelves.length === 0;
-  const noResults  = searchResults !== null && searchResults.length === 0;
+  /* Close dropdown when search is activated */
+  useEffect(() => { if (q) setDropOpen(false); }, [q]);
+
+  const isEmpty     = shelves.length === 0;
+  const noResults   = searchResults !== null && searchResults.length === 0;
   const isSearching = searchResults !== null;
 
   /* Current shelf artworks for normal mode */
@@ -436,36 +455,61 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
 
-      {/* Row: search + directory button */}
-      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+      {/* Row: search + large bubble menu button */}
+      <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
         <div style={{ flex: 1 }}>
           <SearchBar value={search} onChange={onSearchChange} />
         </div>
 
-        {/* Directory button */}
+        {/* Large Bubble Menu Button */}
         {!isEmpty && (
-          <motion.button
-            onClick={() => setDirOpen(true)}
-            whileTap={{ scale: 0.9 }}
-            whileHover={{ scale: 1.05 }}
-            style={{
-              flexShrink: 0,
-              width: 42, height: 42,
-              borderRadius: "12px",
-              background: "rgba(255,255,255,0.02)",
-              border: "1px solid rgba(197,168,255,0.25)",
-              color: "rgba(197,168,255,0.7)",
-              fontSize: "18px",
-              cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              backdropFilter: "blur(2px)",
-              WebkitBackdropFilter: "blur(2px)",
-            }}
-            aria-label="Danh mục Kệ"
-            title="Danh mục Kệ"
-          >
-            𓆉
-          </motion.button>
+          <div ref={menuWrapRef} style={{ position: "relative", flexShrink: 0 }}>
+            <motion.button
+              onClick={() => setDropOpen((o) => !o)}
+              whileTap={{ scale: 0.94 }}
+              whileHover={{ boxShadow: "0 0 28px rgba(255,255,255,0.28), 0 0 10px rgba(197,168,255,0.3)" }}
+              style={{
+                padding: "12px 28px",
+                borderRadius: "50px",
+                background: dropOpen
+                  ? "rgba(255,255,255,0.12)"
+                  : "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.3)",
+                color: "#ffffff",
+                fontSize: "18px",
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontWeight: 500,
+                letterSpacing: "0.06em",
+                cursor: "pointer",
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                boxShadow: "0 0 20px rgba(255,255,255,0.2)",
+                textShadow: TEXT_SHADOW,
+                whiteSpace: "nowrap",
+                transition: "background 0.2s",
+                touchAction: "manipulation",
+              }}
+              aria-label="Danh mục Kệ"
+              aria-expanded={dropOpen}
+            >
+              𐙚 Lưu Ly. 𐙚
+            </motion.button>
+
+            {/* Dropdown */}
+            <AnimatePresence>
+              {dropOpen && (
+                <ShelfDropdown
+                  shelves={nonEmpty}
+                  currentIndex={safeIdx}
+                  onSelect={(idx) => {
+                    setShelfIndex(idx);
+                    setDropOpen(false);
+                  }}
+                  onClose={() => setDropOpen(false)}
+                />
+              )}
+            </AnimatePresence>
+          </div>
         )}
       </div>
 
@@ -519,7 +563,7 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
           </p>
 
           {/* Scrollable results */}
-          <div style={{ maxHeight: "60vh", overflowY: "auto", paddingRight: "4px" }}>
+          <div style={{ height: "60vh", overflowY: "auto", paddingRight: "4px", scrollbarWidth: "thin", scrollbarColor: "rgba(197,168,255,0.2) transparent" }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
               {searchResults.map(({ artwork, shelfId, accent }) => (
                 <ArtworkCell key={artwork.id} artwork={artwork} accent={accent} onLike={() => onLike(shelfId, artwork.id)} />
@@ -531,42 +575,46 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
 
       {/* ── NORMAL MODE: 1 shelf at a time ── */}
       {!isSearching && !isEmpty && currentShelf && (
-        <div>
-          {/* Ocean divider */}
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 1.2 }}
-            aria-hidden
-            style={{ textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: "16px", letterSpacing: "4px", margin: "4px 0 10px", userSelect: "none", pointerEvents: "none", textShadow: "0 0 8px rgba(255,255,255,0.35)" }}
-          >
-            𓆝 𓆟 𓆞 𓇼 ⋆.° 𓆉 𓆡 ⋆.˚ 𓇼
-          </motion.div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
 
-          {/* Shelf name */}
-          <AnimatePresence mode="wait">
-            <motion.h2
-              key={currentShelf.id + "-name"}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.3 }}
-              style={{
-                textAlign: "center",
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontWeight: 500,
-                fontStyle: "italic",
-                fontSize: "clamp(1rem, 2.5vw, 1.4rem)",
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                color: "#ffffff",
-                textShadow: `${TEXT_SHADOW}, 0 0 20px rgba(197,168,255,0.4)`,
-                marginBottom: "16px",
-              }}
+          {/* Fixed header: ocean divider + shelf name */}
+          <div style={{ position: "sticky", top: 0, zIndex: 10, paddingBottom: "4px" }}>
+            {/* Ocean divider */}
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 1.2 }}
+              aria-hidden
+              style={{ textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: "16px", letterSpacing: "4px", margin: "4px 0 10px", userSelect: "none", pointerEvents: "none", textShadow: "0 0 8px rgba(255,255,255,0.35)" }}
             >
-              {currentShelf.shelfName}
-            </motion.h2>
-          </AnimatePresence>
+              𓆝 𓆟 𓆞 𓇼 ⋆.° 𓆉 𓆡 ⋆.˚ 𓇼
+            </motion.div>
 
-          {/* Internal-scroll artwork list */}
+            {/* Shelf name — always visible, never scrolls away */}
+            <AnimatePresence mode="wait">
+              <motion.h2
+                key={currentShelf.id + "-name"}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.3 }}
+                style={{
+                  textAlign: "center",
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
+                  fontWeight: 500,
+                  fontStyle: "italic",
+                  fontSize: "clamp(1rem, 2.5vw, 1.4rem)",
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  color: "#ffffff",
+                  textShadow: `1px 1px 4px black, 0 0 20px rgba(197,168,255,0.4), 0 2px 8px rgba(0,0,0,0.9)`,
+                  marginBottom: "14px",
+                }}
+              >
+                {currentShelf.shelfName}
+              </motion.h2>
+            </AnimatePresence>
+          </div>
+
+          {/* Internal-scroll artwork list — body never scrolls */}
           <div
             style={{
               height: "60vh",
@@ -592,7 +640,7 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
             </AnimatePresence>
           </div>
 
-          {/* Shelf navigation */}
+          {/* Shelf pagination dots (kept for discoverability) */}
           {nonEmpty.length > 1 && (
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", paddingTop: "12px" }}>
               {/* Prev */}
@@ -656,18 +704,6 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
           )}
         </div>
       )}
-
-      {/* Shelf Directory Modal */}
-      <AnimatePresence>
-        {dirOpen && (
-          <ShelfDirectory
-            shelves={nonEmpty}
-            currentIndex={safeIdx}
-            onSelect={setShelfIndex}
-            onClose={() => setDirOpen(false)}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
