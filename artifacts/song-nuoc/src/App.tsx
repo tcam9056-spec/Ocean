@@ -3,6 +3,7 @@ import { Toaster } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { OceanBackground } from "@/components/OceanBackground";
+import { AgeVerification } from "@/components/AgeVerification";
 import { SplashScreen } from "@/components/SplashScreen";
 import { ShowcaseShelf } from "@/components/ShowcaseShelf";
 import { StatsBar } from "@/components/StatsBar";
@@ -66,6 +67,8 @@ const MuteButton = memo(function MuteButton({ isMuted, onToggle }: { isMuted: bo
 
 /* ─── Main app ────────────────────────────────────────────────── */
 function OceanApp() {
+  // Trạng thái xác nhận độ tuổi — false = chưa xác nhận, hiển thị popup 18+
+  const [ageVerified, setAgeVerified] = useState(false);
   const [entered, setEntered] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isAdmin, setIsAdmin] = useState(() =>
@@ -161,8 +164,17 @@ function OceanApp() {
 
       <OceanBackground />
 
+      {/* ── Popup xác nhận 18+ — hiển thị trước mọi thứ khác ── */}
+      {!ageVerified && (
+        <AgeVerification
+          audioRef={audioRef}
+          onConfirm={() => setAgeVerified(true)}
+        />
+      )}
+
+      {/* ── Màn hình Splash — chỉ hiện sau khi đã xác nhận tuổi ── */}
       <AnimatePresence>
-        {!entered && (
+        {ageVerified && !entered && (
           <SplashScreen onEnter={() => setEntered(true)} audioRef={audioRef} />
         )}
       </AnimatePresence>

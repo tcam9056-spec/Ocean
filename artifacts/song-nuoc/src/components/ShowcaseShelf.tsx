@@ -425,8 +425,24 @@ function ShelfDropdown({ shelves, currentIndex, onSelect, onClose }: ShelfDropdo
         {OCEAN_STRIP}
       </div>
 
-      {/* Shelf list */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "5px", padding: "0 6px" }}>
+      {/* Danh sách kệ — có max-height + overflow để cuộn khi nhiều kệ */}
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "5px",
+        padding: "0 6px",
+        // Giới hạn chiều cao tối đa để không bị tràn ra ngoài màn hình
+        maxHeight: "min(52vh, 320px)",
+        // Khi danh sách dài hơn max-height, người dùng có thể cuộn
+        overflowY: "auto",
+        overflowX: "hidden",
+        // Cuộn mượt trên iOS/Android
+        WebkitOverflowScrolling: "touch" as const,
+        overscrollBehavior: "contain",
+        // Thanh cuộn mỏng, phù hợp giao diện đại dương
+        scrollbarWidth: "thin" as const,
+        scrollbarColor: "rgba(78,205,196,0.35) transparent",
+      }}>
         {shelves.map((shelf, idx) => {
           const isActive = idx === currentIndex;
           const isHovered = hoveredId === shelf.id;
