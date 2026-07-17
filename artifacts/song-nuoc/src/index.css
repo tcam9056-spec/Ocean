@@ -241,6 +241,13 @@
   align-items: center;
 }
 
+/* Search bar wrapper — constrained to ~65% so it doesn't dominate */
+.shelf-search-wrap {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 65%;
+}
+
 /* Bubble menu button — desktop sizing lives here so media query can override */
 .shelf-bubble-btn {
   padding: 12px 28px;
@@ -291,6 +298,12 @@
      remaining space beside the search bar.                    */
   .shelf-toolbar {
     flex-wrap: wrap;
+  }
+
+  /* On mobile the search bar takes its own full-width row     */
+  .shelf-search-wrap {
+    max-width: 100%;
+    flex: 1 1 100%;
   }
 
   /* Smaller bubble button so it fits beside the search bar    */

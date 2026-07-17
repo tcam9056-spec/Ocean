@@ -276,9 +276,13 @@ function ShelfDropdown({ shelves, currentIndex, onSelect, onClose }: ShelfDropdo
         minWidth: 260,
         maxWidth: 340,
         width: "max-content",
-        background: "transparent",
-        backdropFilter: "blur(2px)",
-        WebkitBackdropFilter: "blur(2px)",
+        background: "rgba(12,22,44,0.72)",
+        backdropFilter: "blur(18px)",
+        WebkitBackdropFilter: "blur(18px)",
+        border: "1px solid rgba(255,255,255,0.09)",
+        borderRadius: "22px",
+        padding: "10px 6px",
+        boxShadow: "0 12px 48px rgba(0,0,0,0.5), 0 0 28px rgba(197,168,255,0.06), inset 0 1px 0 rgba(255,255,255,0.07)",
       }}
     >
       {/* Top ocean divider */}
@@ -296,7 +300,7 @@ function ShelfDropdown({ shelves, currentIndex, onSelect, onClose }: ShelfDropdo
       </div>
 
       {/* Shelf list */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "2px", padding: "0 4px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "5px", padding: "0 6px" }}>
         {shelves.map((shelf, idx) => {
           const isActive = idx === currentIndex;
           const isHovered = hoveredId === shelf.id;
@@ -311,13 +315,21 @@ function ShelfDropdown({ shelves, currentIndex, onSelect, onClose }: ShelfDropdo
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
-                padding: "10px 16px",
-                borderRadius: "10px",
-                background: "transparent",
-                border: "none",
+                padding: "10px 14px",
+                borderRadius: "16px",
+                background: isActive
+                  ? "rgba(78,205,196,0.09)"
+                  : isHovered
+                    ? "rgba(255,255,255,0.05)"
+                    : "transparent",
+                border: `1px solid ${isActive ? "rgba(78,205,196,0.22)" : "rgba(255,255,255,0.07)"}`,
+                boxShadow: isActive
+                  ? "0 2px 14px rgba(78,205,196,0.13), inset 0 1px 0 rgba(255,255,255,0.06)"
+                  : "0 1px 6px rgba(0,0,0,0.18)",
                 cursor: "pointer",
                 textAlign: "left",
                 width: "100%",
+                transition: "background 0.2s, border-color 0.2s, box-shadow 0.2s",
               }}
             >
               {/* Active dot */}
@@ -455,13 +467,10 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
 
-      {/* Row: search + large bubble menu button */}
+      {/* Row: bubble menu button (left) + search bar (right) */}
       <div className="shelf-toolbar">
-        <div style={{ flex: 1 }}>
-          <SearchBar value={search} onChange={onSearchChange} />
-        </div>
 
-        {/* Large Bubble Menu Button */}
+        {/* Large Bubble Menu Button — LEFT */}
         {!isEmpty && (
           <div ref={menuWrapRef} style={{ position: "relative", flexShrink: 0 }}>
             <motion.button
@@ -509,6 +518,11 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
             </AnimatePresence>
           </div>
         )}
+
+        {/* Search bar — RIGHT, ~65% width on desktop */}
+        <div className="shelf-search-wrap">
+          <SearchBar value={search} onChange={onSearchChange} />
+        </div>
       </div>
 
       {/* ── Empty library ── */}
