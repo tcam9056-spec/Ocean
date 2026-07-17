@@ -9,12 +9,8 @@ import { StatsBar } from "@/components/StatsBar";
 import { AdminPanel } from "@/components/AdminPanel";
 import { useShelvesStore } from "@/hooks/useShelvesStore";
 
-/* ─── Audio sources (ambient ocean / cinematic) ───────────────── */
-const AUDIO_SOURCES = [
-  "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0c6ff1bab.mp3",
-  "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
-  "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3",
-];
+/* ─── Audio source ────────────────────────────────────────────── */
+const AUDIO_SRC = "/bg-music.mp3";
 
 /* ─── Mute button ─────────────────────────────────────────────── */
 function MuteButton({ isMuted, onToggle }: { isMuted: boolean; onToggle: () => void }) {
@@ -55,7 +51,6 @@ function OceanApp() {
   const [search, setSearch] = useState("");
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const srcIdxRef = useRef(0);
 
   const store = useShelvesStore();
 
@@ -65,23 +60,12 @@ function OceanApp() {
     audio.loop = true;
     audio.volume = 0.38;
     audio.preload = "none";
-
-    const tryNext = () => {
-      srcIdxRef.current += 1;
-      if (srcIdxRef.current < AUDIO_SOURCES.length) {
-        audio.src = AUDIO_SOURCES[srcIdxRef.current];
-        audio.load();
-      }
-    };
-
-    audio.addEventListener("error", tryNext, { passive: true });
-    audio.src = AUDIO_SOURCES[0];
+    audio.src = AUDIO_SRC;
     audio.load();
     audioRef.current = audio;
 
     return () => {
       audio.pause();
-      audio.removeEventListener("error", tryNext);
       audio.src = "";
     };
   }, []);
