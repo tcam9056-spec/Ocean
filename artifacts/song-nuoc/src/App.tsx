@@ -14,8 +14,23 @@ const AdminPanel = lazy(() =>
   import("@/components/AdminPanel").then((m) => ({ default: m.AdminPanel }))
 );
 
-/* ─── Audio source ────────────────────────────────────────────── */
-const AUDIO_SRC = "/bg-music.mp3";
+/* ─── Danh sách nhạc nền ──────────────────────────────────────────
+   Để thêm bài mới: copy file .mp3 vào thư mục public/ rồi thêm
+   tên file vào mảng PLAYLIST bên dưới, ví dụ: "/bai-moi.mp3"
+──────────────────────────────────────────────────────────────── */
+const PLAYLIST = [
+  "/bg-music.mp3",
+];
+
+/**
+ * Chọn ngẫu nhiên một bài khác với bài đang phát.
+ * Nếu playlist chỉ có 1 bài thì trả lại bài đó.
+ */
+function pickNextRandom(currentSrc: string): string {
+  if (PLAYLIST.length === 1) return PLAYLIST[0];
+  const others = PLAYLIST.filter((s) => s !== currentSrc);
+  return others[Math.floor(Math.random() * others.length)];
+}
 
 /* ─── Mute button ─────────────────────────────────────────────── */
 const MuteButton = memo(function MuteButton({ isMuted, onToggle }: { isMuted: boolean; onToggle: () => void }) {
@@ -57,34 +72,62 @@ function OceanApp() {
   );
   const [search, setSearch] = useState("");
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioRef    = useRef<HTMLAudioElement | null>(null);
+  // Lưu src đang phát để hàm ended có thể đọc mà không cần closure cũ
+  const currentSrcRef = useRef<string>(PLAYLIST[Math.floor(Math.random() * PLAYLIST.length)]);
 
   const store = useShelvesStore();
 
-  /* ── Audio setup ── */
+  /* ── Audio setup ──────────────────────────────────────────────────
+     Giải thích:
+     1. Khởi tạo Audio object với bài ngẫu nhiên đầu tiên.
+     2. KHÔNG dùng loop — thay vào đó lắng nghe sự kiện "ended".
+     3. Khi "ended" kích hoạt → chọn ngẫu nhiên bài tiếp → phát tiếp.
+     4. Việc phát bài đầu tiên do SplashScreen kích hoạt (click của
+        người dùng) → tuân thủ luật autoplay của trình duyệt.
+  ─────────────────────────────────────────────────────────────────── */
   useEffect(() => {
     const audio = new Audio();
-    audio.loop = true;
     audio.volume = 0.38;
     audio.preload = "none";
-    audio.src = AUDIO_SRC;
+    // Bài ngẫu nhiên đầu tiên đã được chọn lúc khởi tạo ref
+    audio.src = currentSrcRef.current;
     audio.load();
     audioRef.current = audio;
 
+    // Khi một bài kết thúc → chọn bài ngẫu nhiên khác → phát tiếp
+    const handleEnded = () => {
+      const next = pickNextRandom(currentSrcRef.current);
+      currentSrcRef.current = next;
+      audio.src = next;
+      audio.load();
+      // Chỉ phát nếu người dùng chưa tắt tiếng
+      if (!audio.muted) {
+        audio.play().catch(() => {});
+      }
+    };
+
+    audio.addEventListener("ended", handleEnded);
+
     return () => {
+      audio.removeEventListener("ended", handleEnded);
       audio.pause();
       audio.src = "";
     };
   }, []);
 
+  /* ── Nút tắt/mở nhạc ─────────────────────────────────────────── */
   const handleMuteToggle = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
     setIsMuted((prev) => {
       if (prev) {
+        // Đang tắt → bật lại: bỏ mute và phát tiếp
         audio.muted = false;
         audio.play().catch(() => {});
       } else {
+        // Đang bật → tắt: chỉ mute, không dừng hoàn toàn
+        // (giữ vị trí bài để khi bật lại phát tiếp tục)
         audio.muted = true;
       }
       return !prev;
