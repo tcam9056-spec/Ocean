@@ -612,12 +612,14 @@ interface ShelfListProps {
 function ShelfList({ shelves, onSelectShelf, onCreateShelf, onDeleteShelf, onRenameShelf }: ShelfListProps) {
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameVal, setRenameVal] = useState("");
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName.trim()) return;
+    if (!newName.trim() || isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const newId = await onCreateShelf(newName);
       setNewName("");
@@ -626,8 +628,10 @@ function ShelfList({ shelves, onSelectShelf, onCreateShelf, onDeleteShelf, onRen
       onSelectShelf(newId);
     } catch (err) {
       console.error("[handleCreate]", err);
-      toast.error("Không thể tạo kệ — vui lòng thử lại.");
-      setCreating(false);
+      // Giữ nguyên form để Admin sửa lại — KHÔNG đóng popup
+      toast.error("Lỗi máy chủ, không thể tạo Kệ!");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -690,14 +694,16 @@ function ShelfList({ shelves, onSelectShelf, onCreateShelf, onDeleteShelf, onRen
                 required
                 style={{ flex: 1 }}
               />
-              <button type="submit" style={{
-                background: "rgba(78,205,196,0.14)", border: "1px solid rgba(78,205,196,0.28)",
+              <button type="submit" disabled={isSubmitting} style={{
+                background: isSubmitting ? "rgba(78,205,196,0.06)" : "rgba(78,205,196,0.14)",
+                border: "1px solid rgba(78,205,196,0.28)",
                 borderRadius: 10, padding: "0 14px",
-                color: "rgba(78,205,196,0.9)", cursor: "pointer", flexShrink: 0,
+                color: isSubmitting ? "rgba(78,205,196,0.4)" : "rgba(78,205,196,0.9)",
+                cursor: isSubmitting ? "not-allowed" : "pointer", flexShrink: 0,
                 fontFamily: "'Cormorant Garamond', Georgia, serif",
                 fontSize: "0.84rem", touchAction: "manipulation",
-              }}>✓</button>
-              <button type="button" onClick={() => setCreating(false)} style={{
+              }}>{isSubmitting ? "..." : "✓"}</button>
+              <button type="button" onClick={() => { if (!isSubmitting) setCreating(false); }} style={{
                 background: "rgba(197,168,255,0.07)", border: "1px solid rgba(197,168,255,0.14)",
                 borderRadius: 10, padding: "0 14px",
                 color: "rgba(197,168,255,0.6)", cursor: "pointer", flexShrink: 0,
