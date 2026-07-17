@@ -231,6 +231,112 @@
 }
 
 /* ============================================================
+   SHOWCASE SHELF — BASE CLASSES (overridden by mobile below)
+   ============================================================ */
+
+/* Search bar + bubble button row */
+.shelf-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Bubble menu button — desktop sizing lives here so media query can override */
+.shelf-bubble-btn {
+  padding: 12px 28px;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+}
+
+/* 2-column artwork grid */
+.shelf-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding-bottom: 8px;
+}
+
+/* Artwork list — inner-scrolling area */
+.shelf-artwork-scroll {
+  height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(197,168,255,0.2) transparent;
+}
+
+/* Pagination row */
+.shelf-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   MOBILE FIXES  (≤ 768 px)
+   ============================================================ */
+@media (max-width: 768px) {
+  /* Let the outer container scroll — the full-page lock breaks
+     mobile because the fixed-height inner scroll area pushes
+     pagination and other controls off screen.                 */
+  .ocean-scroll-container {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Toolbar can wrap if the bubble button is wider than the
+     remaining space beside the search bar.                    */
+  .shelf-toolbar {
+    flex-wrap: wrap;
+  }
+
+  /* Smaller bubble button so it fits beside the search bar    */
+  .shelf-bubble-btn {
+    padding: 10px 16px;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+  }
+
+  /* Single-column grid — two columns is too cramped on phones */
+  .shelf-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Remove the fixed 60 vh — the page itself now scrolls,
+     so an inner fixed-height scroll area is redundant and
+     breaks on small viewports.                               */
+  .shelf-artwork-scroll {
+    height: auto;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+
+  /* Safe-area padding so the last card/button isn't hidden
+     under iOS home-indicator or Android navigation bar.      */
+  .shelf-pagination {
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+}
+
+/* ── Very small phones (≤ 480 px) ────────────────────────── */
+@media (max-width: 480px) {
+  .shelf-bubble-btn {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  /* Pull the main content container inward slightly so nothing
+     touches the screen edge.                                  */
+  .ocean-scroll-container > div {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
+
+/* ============================================================
    UTILITIES
    ============================================================ */
 @layer utilities {

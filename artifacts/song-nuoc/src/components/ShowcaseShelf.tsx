@@ -456,7 +456,7 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
 
       {/* Row: search + large bubble menu button */}
-      <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+      <div className="shelf-toolbar">
         <div style={{ flex: 1 }}>
           <SearchBar value={search} onChange={onSearchChange} />
         </div>
@@ -468,18 +468,16 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
               onClick={() => setDropOpen((o) => !o)}
               whileTap={{ scale: 0.94 }}
               whileHover={{ boxShadow: "0 0 28px rgba(255,255,255,0.28), 0 0 10px rgba(197,168,255,0.3)" }}
+              className="shelf-bubble-btn"
               style={{
-                padding: "12px 28px",
                 borderRadius: "50px",
                 background: dropOpen
                   ? "rgba(255,255,255,0.12)"
                   : "rgba(255,255,255,0.08)",
                 border: "1px solid rgba(255,255,255,0.3)",
                 color: "#ffffff",
-                fontSize: "18px",
                 fontFamily: "'Cormorant Garamond', Georgia, serif",
                 fontWeight: 500,
-                letterSpacing: "0.06em",
                 cursor: "pointer",
                 backdropFilter: "blur(6px)",
                 WebkitBackdropFilter: "blur(6px)",
@@ -563,8 +561,8 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
           </p>
 
           {/* Scrollable results */}
-          <div style={{ height: "60vh", overflowY: "auto", paddingRight: "4px", scrollbarWidth: "thin", scrollbarColor: "rgba(197,168,255,0.2) transparent" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
+          <div className="shelf-artwork-scroll">
+            <div className="shelf-grid">
               {searchResults.map(({ artwork, shelfId, accent }) => (
                 <ArtworkCell key={artwork.id} artwork={artwork} accent={accent} onLike={() => onLike(shelfId, artwork.id)} />
               ))}
@@ -615,15 +613,7 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
           </div>
 
           {/* Internal-scroll artwork list — body never scrolls */}
-          <div
-            style={{
-              height: "60vh",
-              overflowY: "auto",
-              paddingRight: "4px",
-              scrollbarWidth: "thin",
-              scrollbarColor: "rgba(197,168,255,0.2) transparent",
-            }}
-          >
+          <div className="shelf-artwork-scroll">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentShelf.id}
@@ -631,7 +621,7 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
                 animate={{ opacity: 1, y: 0  }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-                style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", paddingBottom: "8px" }}
+                className="shelf-grid"
               >
                 {shelfArtworks.map(({ artwork, shelfId, accent }) => (
                   <ArtworkCell key={artwork.id} artwork={artwork} accent={accent} onLike={() => onLike(shelfId, artwork.id)} />
@@ -642,7 +632,7 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
 
           {/* Shelf pagination dots (kept for discoverability) */}
           {nonEmpty.length > 1 && (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", paddingTop: "12px" }}>
+            <div className="shelf-pagination">
               {/* Prev */}
               <motion.button
                 onClick={() => setShelfIndex((i) => Math.max(0, i - 1))}
