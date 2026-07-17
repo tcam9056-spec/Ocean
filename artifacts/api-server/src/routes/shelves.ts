@@ -16,7 +16,6 @@ router.get("/shelves", async (req, res): Promise<void> => {
         artworkId:        artworksTable.id,
         artworkTitle:     artworksTable.title,
         artworkDesc:      artworksTable.description,
-        artworkPlot:      artworksTable.plot,
         artworkLink:      artworksTable.link,
         artworkLikes:     artworksTable.likesCount,
         artworkCreatedAt: artworksTable.createdAt,
@@ -41,7 +40,6 @@ router.get("/shelves", async (req, res): Promise<void> => {
           id:          String(r.artworkId),
           title:       r.artworkTitle!,
           description: r.artworkDesc ?? "",
-          plot:        r.artworkPlot ?? "",
           link:        r.artworkLink!,
           likes:       r.artworkLikes ?? 0,
           createdAt:   r.artworkCreatedAt!.getTime(),
@@ -127,10 +125,9 @@ router.delete("/shelves/:shelfId", async (req, res): Promise<void> => {
 router.post("/shelves/:shelfId/artworks", async (req, res): Promise<void> => {
   try {
     const shelfId = Number(req.params.shelfId);
-    const { title, description, plot, link } = req.body as {
+    const { title, description, link } = req.body as {
       title?: string;
       description?: string;
-      plot?: string;
       link?: string;
     };
 
@@ -147,7 +144,6 @@ router.post("/shelves/:shelfId/artworks", async (req, res): Promise<void> => {
         shelfId,
         title: title.trim(),
         description: (description ?? "").trim(),
-        plot: plot ?? "",
         link: link.trim(),
         likesCount: 0,
       })
@@ -159,7 +155,6 @@ router.post("/shelves/:shelfId/artworks", async (req, res): Promise<void> => {
       id: String(artwork.id),
       title: artwork.title,
       description: artwork.description,
-      plot: artwork.plot,
       link: artwork.link,
       likes: artwork.likesCount,
       createdAt: artwork.createdAt.getTime(),
@@ -176,10 +171,9 @@ router.patch(
   async (req, res): Promise<void> => {
     try {
       const artId = Number(req.params.artId);
-      const { title, description, plot, link } = req.body as {
+      const { title, description, link } = req.body as {
         title?: string;
         description?: string;
-        plot?: string;
         link?: string;
       };
 
@@ -193,7 +187,6 @@ router.patch(
         .set({
           title: title.trim(),
           description: (description ?? "").trim(),
-          plot: plot ?? "",
           link: link.trim(),
         })
         .where(eq(artworksTable.id, artId));
