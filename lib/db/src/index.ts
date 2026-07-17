@@ -1,5 +1,7 @@
 import { drizzle } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
 import pg from "pg";
+import path from "path";
 import * as schema from "./schema";
 
 const { Pool } = pg;
@@ -48,5 +50,17 @@ pool.connect((err, client, release) => {
 });
 
 export const db = drizzle(pool, { schema });
+
+/**
+ * Apply all pending SQL migrations from the bundled `migrations/` folder.
+ * Uses drizzle-orm's built-in migrator — does NOT require drizzle-kit at runtime.
+ * Safe to call on every startup: already-applied migrations are skipped.
+ */
+export async function runMigrations() {
+  const migrationsFolder = path.join(__dirname, "migrations");
+  console.info("[DB] Đang chạy migrations...");
+  await migrate(db, { migrationsFolder });
+  console.info("[DB] ✅ Migrations hoàn tất.");
+}
 
 export * from "./schema";
