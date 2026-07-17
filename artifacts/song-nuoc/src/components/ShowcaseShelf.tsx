@@ -131,18 +131,18 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
           maxHeight: "80vh",
           display: "flex",
           flexDirection: "column",
-          background: "rgba(10,20,40,0.6)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          border: `1px solid ${accent.border}0.22)`,
+          background: "rgba(255,255,255,0.1)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          border: "1px solid rgba(255,255,255,0.4)",
           borderRadius: "32px",
-          boxShadow: `0 0 15px rgba(255,255,255,0.1), 0 32px 80px rgba(0,8,32,0.5), inset 0 1px 0 rgba(240,244,255,0.06)`,
+          boxShadow: "0 8px 32px 0 rgba(0,150,255,0.2), inset 0 2px 10px rgba(255,255,255,0.3)",
         }}
       >
         {/* Header */}
         <div style={{
           padding: "20px 48px 12px 24px",
-          borderBottom: `1px solid ${accent.border}0.12)`,
+          borderBottom: "1px solid rgba(255,255,255,0.15)",
           flexShrink: 0,
         }}>
           <p style={{
@@ -152,19 +152,19 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
             fontSize: "0.65rem",
             letterSpacing: "0.22em",
             textTransform: "uppercase",
-            color: `${accent.glow}0.55)`,
+            color: "rgba(255,255,255,0.75)",
             marginBottom: 4,
-            textShadow: TEXT_SHADOW,
+            textShadow: "0 1px 2px rgba(0,0,0,0.3)",
           }}>
-            ✦ cốt truyện
+            🐳 cốt truyện
           </p>
           <h3 style={{
             fontFamily: "'Cormorant Garamond', Georgia, serif",
             fontWeight: 600,
             fontSize: "1.15rem",
-            color: "rgba(240,244,255,0.92)",
+            color: "rgba(255,255,255,0.95)",
             letterSpacing: "0.02em",
-            textShadow: `${TEXT_SHADOW}, 0 0 20px ${accent.glow}0.3)`,
+            textShadow: "0 1px 2px rgba(0,0,0,0.3)",
             margin: 0,
             wordBreak: "break-word",
           }}>
@@ -183,9 +183,9 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
             width: 28,
             height: 28,
             borderRadius: "50%",
-            background: "rgba(197,168,255,0.07)",
-            border: "1px solid rgba(197,168,255,0.16)",
-            color: "rgba(197,168,255,0.55)",
+            background: "rgba(255,255,255,0.15)",
+            border: "1px solid rgba(255,255,255,0.35)",
+            color: "rgba(255,255,255,0.75)",
             fontSize: "12px",
             cursor: "pointer",
             display: "flex",
@@ -203,21 +203,25 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
           flex: 1,
           overflowY: "auto",
           padding: "20px 28px 32px",
+          WebkitOverflowScrolling: "touch",
+          overscrollBehavior: "contain",
+          willChange: "transform, scroll-position",
         }}>
           <div
             dangerouslySetInnerHTML={{
               __html: plot
                 ? plot
-                : '<em style="color:rgba(197,168,255,0.35)">Chưa có cốt truyện.</em>',
+                : '<em style="color:rgba(255,255,255,0.4)">Chưa có cốt truyện.</em>',
             }}
             style={{
               fontFamily: "'Cormorant Garamond', Georgia, serif",
               fontWeight: 400,
               fontSize: "0.97rem",
-              color: "rgba(225,215,255,0.9)",
+              color: "rgba(255,255,255,0.9)",
               lineHeight: 1.8,
               wordBreak: "break-word",
-              textShadow: TEXT_SHADOW,
+              textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+              textRendering: "optimizeLegibility",
             }}
           />
         </div>
@@ -359,8 +363,8 @@ const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: Artwo
           )}
 
           <div className="flex items-center justify-between gap-2 mt-auto pt-1">
-            {/* ggai + plot — centered, replacing the old hostname row */}
-            <div style={{ display: "flex", gap: 8, flex: 1, justifyContent: "center" }}>
+            {/* ggai + plot — left-aligned, bottom-left of card */}
+            <div style={{ display: "flex", gap: 12, justifyContent: "flex-start" }}>
               <button
                 onClick={handleGgai}
                 style={miniBtnBase}
