@@ -13,8 +13,8 @@ interface AdminPanelProps {
   onCreateShelf: (name: string) => Promise<string>;
   onRenameShelf: (id: string, name: string) => void;
   onDeleteShelf: (id: string) => void;
-  onAddArtwork: (shelfId: string, data: { title: string; description: string; link: string }) => void;
-  onUpdateArtwork: (shelfId: string, artId: string, data: { title: string; description: string; link: string }) => void;
+  onAddArtwork: (shelfId: string, data: { title: string; description: string; plot: string; link: string }) => void;
+  onUpdateArtwork: (shelfId: string, artId: string, data: { title: string; description: string; plot: string; link: string }) => void;
   onDeleteArtwork: (shelfId: string, artId: string) => void;
 }
 
@@ -286,19 +286,20 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (html: s
 interface ArtworkFormProps {
   shelfId: string;
   initial?: Artwork;
-  onSave: (data: { title: string; description: string; link: string }) => void;
+  onSave: (data: { title: string; description: string; plot: string; link: string }) => void;
   onCancel: () => void;
 }
 
 function ArtworkForm({ initial, onSave, onCancel }: ArtworkFormProps) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [desc, setDesc] = useState(initial?.description ?? "");
+  const [plot, setPlot] = useState(initial?.plot ?? "");
   const [link, setLink] = useState(initial?.link ?? "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !link.trim()) return;
-    onSave({ title, description: desc, link });
+    onSave({ title, description: desc, plot, link });
   };
 
   return (
@@ -330,6 +331,12 @@ function ArtworkForm({ initial, onSave, onCancel }: ArtworkFormProps) {
         onChange={(e) => setDesc(e.target.value)}
         placeholder="mô tả nhẹ nhàng..."
       />
+      <TextArea
+        value={plot}
+        onChange={(e) => setPlot(e.target.value)}
+        placeholder="cốt truyện (tuỳ chọn)..."
+        style={{ height: 110 }}
+      />
       <Field
         type="url"
         value={link}
@@ -353,7 +360,7 @@ function ArtworkForm({ initial, onSave, onCancel }: ArtworkFormProps) {
 interface ArtworkItemProps {
   artwork: Artwork;
   shelfId: string;
-  onUpdate: (data: { title: string; description: string; link: string }) => void;
+  onUpdate: (data: { title: string; description: string; plot: string; link: string }) => void;
   onDelete: () => void;
 }
 
@@ -445,8 +452,8 @@ interface ShelfDetailProps {
   shelf: Shelf;
   onBack: () => void;
   onRename: (name: string) => void;
-  onAdd: (data: { title: string; description: string; link: string }) => void;
-  onUpdate: (artId: string, data: { title: string; description: string; link: string }) => void;
+  onAdd: (data: { title: string; description: string; plot: string; link: string }) => void;
+  onUpdate: (artId: string, data: { title: string; description: string; plot: string; link: string }) => void;
   onDelete: (artId: string) => void;
 }
 

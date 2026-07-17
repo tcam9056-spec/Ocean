@@ -5,7 +5,7 @@ export interface Artwork {
   id: string;
   title: string;
   description: string;
-  plot?: string;
+  plot: string;
   link: string;
   likes: number;
   createdAt: number;
@@ -93,7 +93,7 @@ export function useShelvesStore() {
   }, [invalidate]);
 
   const addArtwork = useCallback(
-    (shelfId: string, data: { title: string; description: string; link: string }) => {
+    (shelfId: string, data: { title: string; description: string; plot: string; link: string }) => {
       apiFetch(`/api/shelves/${shelfId}/artworks`, {
         method: "POST",
         body: JSON.stringify(data),
@@ -105,7 +105,7 @@ export function useShelvesStore() {
   );
 
   const updateArtwork = useCallback(
-    (shelfId: string, artId: string, data: { title: string; description: string; link: string }) => {
+    (shelfId: string, artId: string, data: { title: string; description: string; plot: string; link: string }) => {
       apiFetch(`/api/shelves/${shelfId}/artworks/${artId}`, {
         method: "PATCH",
         body: JSON.stringify(data),
