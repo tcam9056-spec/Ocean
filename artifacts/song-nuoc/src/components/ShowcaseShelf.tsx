@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import type { Shelf, Artwork } from "@/hooks/useShelvesStore";
@@ -49,10 +49,8 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
         placeholder="tìm tác phẩm, kệ..."
         style={{
           width: "100%",
-          background: "rgba(255,255,255,0.03)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          border: "1px solid rgba(255,255,255,0.15)",
+          background: "transparent",
+          border: "1px solid rgba(255,255,255,0.2)",
           borderRadius: "10px",
           padding: "11px 20px 11px 38px",
           color: "rgba(240,244,255,0.92)",
@@ -165,9 +163,9 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
       className="group relative overflow-hidden"
       style={{
         minHeight: 130,
-        background: "rgba(255,255,255,0.03)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
+        background: "transparent",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "8px",
       }}
     >
       {/* Hover glow */}
@@ -283,8 +281,8 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
               disabled={liking}
               aria-label="Thích"
             >
-              <span style={{ fontSize: "13px", lineHeight: 1, filter: artwork.likes > 0 ? "drop-shadow(0 0 5px rgba(255,130,175,0.8))" : "none" }}>
-                {artwork.likes > 0 ? "♥" : "♡"}
+              <span style={{ fontSize: "14px", lineHeight: 1, filter: artwork.likes > 0 ? "drop-shadow(0 0 6px rgba(78,205,196,0.9))" : "none" }}>
+                🪼
               </span>
               <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 400, fontSize: "0.8rem" }}>
                 {artwork.likes}
@@ -421,7 +419,10 @@ function SkeletonShelf() {
 }
 
 /* ─── Main component ──────────────────────────────────────────── */
+const ITEMS_PER_PAGE = 6;
+
 export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: ShowcaseShelfProps) {
+  const [page, setPage] = useState(0);
   const q = search.trim().toLowerCase();
 
   // Build a set of artwork IDs that match the search
@@ -449,18 +450,40 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
     return shelves.filter((s) => s.artworks.some((a) => matchIds.has(a.id)));
   }, [shelves, matchIds]);
 
-  // Skeleton on very first mount if loading (not needed since localStorage is sync)
+  // Flatten all visible artworks with shelf reference
+  const allItems = useMemo(() => {
+    let idx = 0;
+    const items: Array<{ artwork: Artwork; shelfId: string; accent: typeof NEON[0]; shelfName: string }> = [];
+    for (const shelf of visibleShelves) {
+      const arts = matchIds ? shelf.artworks.filter((a) => matchIds.has(a.id)) : shelf.artworks;
+      for (const artwork of arts) {
+        items.push({ artwork, shelfId: shelf.id, accent: NEON[idx % NEON.length], shelfName: shelf.shelfName });
+        idx++;
+      }
+    }
+    return items;
+  }, [visibleShelves, matchIds]);
+
+  // Reset to page 0 whenever search changes
+  useEffect(() => { setPage(0); }, [search]);
+
+  const totalPages = Math.max(1, Math.ceil(allItems.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(page, totalPages - 1);
+  const pageItems = allItems.slice(safePage * ITEMS_PER_PAGE, (safePage + 1) * ITEMS_PER_PAGE);
+
   const isEmpty = shelves.every((s) => s.artworks.length === 0) && shelves.length === 0;
+  const noResults = !isEmpty && visibleShelves.length === 0 && !!q;
 
   return (
-    <>
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
       <SearchBar value={search} onChange={onSearchChange} />
 
+      {/* Empty library */}
       {isEmpty && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center py-24"
+          className="text-center py-20"
         >
           <motion.div
             className="flex justify-center gap-2 mb-6"
@@ -485,6 +508,7 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
             fontFamily: "'Cormorant Garamond', Georgia, serif",
             fontWeight: 300, fontSize: "1.3rem",
             color: "rgba(240,244,255,0.38)", fontStyle: "italic", lineHeight: 1.7,
+            textShadow: "0 2px 4px rgba(0,0,0,0.8)",
           }}>
             Kệ đang trống...
             <br />
@@ -495,16 +519,18 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
         </motion.div>
       )}
 
-      {!isEmpty && visibleShelves.length === 0 && q && (
+      {/* No search results */}
+      {noResults && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center py-16"
+          className="text-center py-14"
         >
           <p style={{
             fontFamily: "'Cormorant Garamond', Georgia, serif",
             fontWeight: 300, fontStyle: "italic",
             fontSize: "1.05rem", color: "rgba(197,168,255,0.4)", lineHeight: 1.7,
+            textShadow: "0 2px 4px rgba(0,0,0,0.8)",
           }}>
             Không tìm thấy tác phẩm nào...
             <br />
@@ -513,61 +539,101 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
         </motion.div>
       )}
 
-      {visibleShelves.map((shelf, i) => (
-        <ShelfSection
-          key={shelf.id}
-          shelf={shelf}
-          shelfIndex={i}
-          onLike={(artId) => onLike(shelf.id, artId)}
-          highlightIds={matchIds ?? undefined}
-        />
-      ))}
-
-      {/* Shelves with no artworks (only show if not searching) */}
-      {!q && shelves.filter((s) => s.artworks.length === 0).map((shelf, i) => (
-        <motion.div
-          key={shelf.id}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: (visibleShelves.length + i) * 0.1 }}
-          className="mb-6"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="rounded-full" style={{ width: 4, height: 4, background: "rgba(197,168,255,0.2)" }} />
-            <h2 style={{
-              fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontWeight: 300, fontStyle: "italic",
-              fontSize: "0.88rem", letterSpacing: "0.14em",
-              color: "rgba(197,168,255,0.3)", textTransform: "uppercase",
-            }}>
-              {shelf.shelfName}
-            </h2>
-            <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, rgba(197,168,255,0.1), transparent)" }} />
-          </div>
-          <div
-            className="flex items-center justify-center"
+      {/* Paginated artwork grid */}
+      {!isEmpty && !noResults && (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={safePage}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25 }}
             style={{
-              minHeight: 80,
-              width: "100%",
-              background: "rgba(255,255,255,0.03)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
-              border: "1px solid rgba(255,255,255,0.15)",
-              borderRadius: "10px",
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: "8px",
             }}
           >
-            <p style={{
+            {pageItems.map(({ artwork, shelfId, accent, shelfName }) => (
+              <ArtworkCell
+                key={artwork.id}
+                artwork={artwork}
+                weight={1}
+                accent={accent}
+                onLike={() => onLike(shelfId, artwork.id)}
+                isLast={true}
+              />
+            ))}
+          </motion.div>
+        </AnimatePresence>
+      )}
+
+      {/* Pagination controls */}
+      {!isEmpty && !noResults && totalPages > 1 && (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", paddingTop: "4px", paddingBottom: "8px" }}>
+          {/* Prev */}
+          <motion.button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={safePage === 0}
+            whileTap={{ scale: 0.88 }}
+            style={{
+              width: 30, height: 30, borderRadius: "50%",
+              background: "transparent",
+              border: "1px solid rgba(255,255,255,0.12)",
+              color: safePage === 0 ? "rgba(197,168,255,0.2)" : "rgba(197,168,255,0.6)",
               fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontStyle: "italic", fontWeight: 500,
-              fontSize: "0.8rem", color: "rgba(197,168,255,0.7)",
-              letterSpacing: "0.08em",
-              textShadow: "0 2px 4px rgba(0,0,0,0.8)",
-            }}>
-              kệ trống
-            </p>
-          </div>
-        </motion.div>
-      ))}
-    </>
+              fontSize: "1rem", cursor: safePage === 0 ? "default" : "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "all 0.2s",
+            }}
+            aria-label="Trang trước"
+          >‹</motion.button>
+
+          {/* Page numbers */}
+          {Array.from({ length: totalPages }, (_, i) => (
+            <motion.button
+              key={i}
+              onClick={() => setPage(i)}
+              whileTap={{ scale: 0.88 }}
+              style={{
+                width: 32, height: 32, borderRadius: "50%",
+                background: i === safePage ? "rgba(78,205,196,0.12)" : "transparent",
+                border: i === safePage
+                  ? "1px solid rgba(78,205,196,0.5)"
+                  : "1px solid rgba(255,255,255,0.12)",
+                color: i === safePage ? "rgba(78,205,196,0.95)" : "rgba(197,168,255,0.55)",
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontSize: "0.85rem", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                textShadow: "0 2px 4px rgba(0,0,0,0.8)",
+                transition: "all 0.2s",
+              }}
+              aria-label={`Trang ${i + 1}`}
+              aria-current={i === safePage ? "page" : undefined}
+            >
+              {i + 1}
+            </motion.button>
+          ))}
+
+          {/* Next */}
+          <motion.button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={safePage === totalPages - 1}
+            whileTap={{ scale: 0.88 }}
+            style={{
+              width: 30, height: 30, borderRadius: "50%",
+              background: "transparent",
+              border: "1px solid rgba(255,255,255,0.12)",
+              color: safePage === totalPages - 1 ? "rgba(197,168,255,0.2)" : "rgba(197,168,255,0.6)",
+              fontFamily: "'Cormorant Garamond', Georgia, serif",
+              fontSize: "1rem", cursor: safePage === totalPages - 1 ? "default" : "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "all 0.2s",
+            }}
+            aria-label="Trang tiếp"
+          >›</motion.button>
+        </div>
+      )}
+    </div>
   );
 }

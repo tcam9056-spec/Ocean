@@ -123,7 +123,7 @@ function OceanApp() {
 
             <div className="ocean-scroll-container">
               <div
-                className="mx-auto px-4 sm:px-6 py-16 sm:py-20"
+                className="mx-auto px-4 sm:px-6 py-8"
                 style={{ maxWidth: 900 }}
               >
                 {/* Header */}
@@ -200,7 +200,6 @@ function OceanApp() {
                   onLike={store.likeArtwork}
                 />
 
-                <div className="h-32" />
               </div>
             </div>
           </motion.div>

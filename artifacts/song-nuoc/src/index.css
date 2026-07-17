@@ -180,11 +180,8 @@
 .ocean-scroll-container {
   position: absolute;
   inset: 0;
-  overflow-y: scroll;
+  overflow-y: hidden;
   overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(78,205,196,0.25) transparent;
-  scroll-behavior: smooth;
 }
 
 .ocean-scroll-container::-webkit-scrollbar {

@@ -20,9 +20,7 @@ export function StatsBar({ shelves }: StatsBarProps) {
       transition={{ delay: 0.5, duration: 1.2 }}
       className="flex items-center justify-center gap-6 sm:gap-8 py-3 px-6 sm:px-8 mx-auto mb-10 w-fit rounded-full"
       style={{
-        background: "rgba(255,255,255,0.03)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
+        background: "transparent",
         border: "1px solid rgba(255,255,255,0.15)",
         boxShadow: "0 2px 16px rgba(0,0,0,0.2)",
         maxWidth: "calc(100vw - 2rem)",
