@@ -1,40 +1,27 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import type { Shelf, Artwork } from "@/hooks/useShelvesStore";
 
-interface ShowcaseShelfProps {
-  shelves: Shelf[];
-  search: string;
-  onSearchChange: (v: string) => void;
-  onLike: (shelfId: string, artId: string) => void;
-}
+/* ─── Shared text-shadow for readability ──────────────────────── */
+const TEXT_SHADOW = "1px 1px 3px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.7)";
 
-/* ─── Row patterns ────────────────────────────────────────────── */
-const ROW_PATTERNS = [[7, 5], [4, 8], [5, 3, 4], [6, 6], [8, 4], [3, 5, 4]];
+/* ─── Neon accents ────────────────────────────────────────────── */
+const NEON = [
+  { glow: "rgba(78,205,196,",   border: "rgba(78,205,196,"   },
+  { glow: "rgba(197,168,255,",  border: "rgba(197,168,255,"  },
+  { glow: "rgba(120,200,255,",  border: "rgba(120,200,255,"  },
+  { glow: "rgba(160,240,220,",  border: "rgba(160,240,220,"  },
+];
 
-function groupIntoRows(artworks: Artwork[]) {
-  const rows: { artworks: Artwork[]; weights: number[] }[] = [];
-  let i = 0, pi = 0;
-  while (i < artworks.length) {
-    const pattern = ROW_PATTERNS[pi % ROW_PATTERNS.length];
-    const chunk = artworks.slice(i, i + pattern.length);
-    if (!chunk.length) break;
-    rows.push({ artworks: chunk, weights: pattern.slice(0, chunk.length) });
-    i += chunk.length;
-    pi++;
-  }
-  return rows;
-}
-
-/* ─── Search bar ──────────────────────────────────────────────── */
+/* ─── SearchBar ────────────────────────────────────────────────── */
 function SearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4, duration: 0.9 }}
-      className="relative mb-8"
+      className="relative"
     >
       <div
         className="absolute left-4 top-1/2 pointer-events-none select-none"
@@ -49,7 +36,9 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
         placeholder="tìm tác phẩm, kệ..."
         style={{
           width: "100%",
-          background: "rgba(255,255,255,0.05)",
+          background: "rgba(255,255,255,0.02)",
+          backdropFilter: "blur(2px)",
+          WebkitBackdropFilter: "blur(2px)",
           border: "1px solid rgba(255,255,255,0.15)",
           borderRadius: "14px",
           padding: "11px 20px 11px 38px",
@@ -59,18 +48,11 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
           fontWeight: 500,
           letterSpacing: "0.04em",
           outline: "none",
-          boxShadow: "inset 0 0 10px rgba(255,255,255,0.03), 0 4px 15px rgba(0,0,0,0.15)",
-          textShadow: "1px 1px 3px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.7)",
-          transition: "border-color 0.3s, box-shadow 0.3s",
+          textShadow: TEXT_SHADOW,
+          transition: "border-color 0.3s",
         }}
-        onFocus={(e) => {
-          e.currentTarget.style.borderColor = "rgba(78,205,196,0.45)";
-          e.currentTarget.style.boxShadow = "inset 0 0 10px rgba(78,205,196,0.05), 0 0 0 2px rgba(78,205,196,0.12)";
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
-          e.currentTarget.style.boxShadow = "inset 0 0 10px rgba(255,255,255,0.03), 0 4px 15px rgba(0,0,0,0.15)";
-        }}
+        onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(78,205,196,0.45)"; }}
+        onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}
         aria-label="Tìm kiếm"
       />
       <AnimatePresence>
@@ -86,53 +68,36 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
               transform: "translateY(-50%)",
               color: "rgba(197,168,255,0.5)",
               fontSize: "12px",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: "6px",
+              background: "none", border: "none",
+              cursor: "pointer", padding: "6px",
               touchAction: "manipulation",
             }}
             aria-label="Xóa tìm kiếm"
-          >
-            ✕
-          </motion.button>
+          >✕</motion.button>
         )}
       </AnimatePresence>
     </motion.div>
   );
 }
 
-/* ─── Neon accents ────────────────────────────────────────────── */
-const NEON = [
-  { glow: "rgba(78,205,196,", border: "rgba(78,205,196," },
-  { glow: "rgba(197,168,255,", border: "rgba(197,168,255," },
-  { glow: "rgba(120,200,255,", border: "rgba(120,200,255," },
-  { glow: "rgba(160,240,220,", border: "rgba(160,240,220," },
-];
-
 /* ─── Artwork card ────────────────────────────────────────────── */
 interface ArtworkCellProps {
   artwork: Artwork;
-  weight: number;
   accent: typeof NEON[0];
   onLike: () => void;
-  isLast: boolean;
 }
 
-function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellProps) {
-  const [liking, setLiking] = useState(false);
-  const [burst, setBurst] = useState<{ id: number; angle: number; color: string; dist: number; size: number }[]>([]);
+function ArtworkCell({ artwork, accent, onLike }: ArtworkCellProps) {
+  const [liking, setLiking]  = useState(false);
+  const [burst, setBurst]    = useState<{ id: number; angle: number; color: string; dist: number; size: number }[]>([]);
 
   let hostname = "";
   try { hostname = new URL(artwork.link).hostname; } catch { hostname = artwork.link; }
 
-  const isValidUrl = (() => {
-    try { new URL(artwork.link); return true; } catch { return false; }
-  })();
+  const isValidUrl = (() => { try { new URL(artwork.link); return true; } catch { return false; } })();
 
   const handleLike = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     if (liking) return;
     setLiking(true);
     const colors = [
@@ -153,40 +118,25 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
   };
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!isValidUrl) {
-      e.preventDefault();
-      toast.error("Link không hợp lệ");
-    }
+    if (!isValidUrl) { e.preventDefault(); toast.error("Link không hợp lệ"); }
   };
 
   return (
     <div
-      className="group relative overflow-hidden"
+      className="group relative"
       style={{
-        minHeight: 130,
-        background: "rgba(255,255,255,0.04)",
+        background: "transparent",
         border: "1px solid rgba(255,255,255,0.1)",
         borderRadius: "20px",
-        boxShadow: "inset 0 0 10px rgba(255,255,255,0.05), 0 4px 15px rgba(0,0,0,0.1)",
-        padding: "16px",
+        transition: "border-color 0.3s",
       }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = `${accent.border}0.25)`; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.1)"; }}
     >
       {/* Hover glow */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{
-          background: `linear-gradient(to top, ${accent.glow}0.15) 0%, transparent 70%)`,
-          zIndex: 1,
-        }}
-      />
-      {/* Bottom shelf glow */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-px pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{
-          background: `linear-gradient(to right, transparent, ${accent.border}0.8) 50%, transparent)`,
-          boxShadow: `0 0 10px ${accent.glow}0.5)`,
-          zIndex: 2,
-        }}
+        className="absolute inset-0 rounded-[20px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{ background: `linear-gradient(to top, ${accent.glow}0.08) 0%, transparent 70%)`, zIndex: 0 }}
       />
 
       <a
@@ -194,17 +144,17 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleLinkClick}
-        className="block h-full p-4 sm:p-5"
-        style={{ zIndex: 3, position: "relative", cursor: isValidUrl ? "pointer" : "default" }}
+        className="block p-4"
+        style={{ zIndex: 1, position: "relative", cursor: isValidUrl ? "pointer" : "default" }}
       >
         <h3
           className="leading-snug mb-1.5"
           style={{
             fontFamily: "'Cormorant Garamond', Georgia, serif",
             fontWeight: 700,
-            fontSize: "clamp(1rem, 1.6vw, 1.2rem)",
+            fontSize: "clamp(0.95rem, 1.5vw, 1.15rem)",
             color: "#ffffff",
-            textShadow: `1px 1px 3px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.7), 0 0 18px ${accent.glow}0.4)`,
+            textShadow: `${TEXT_SHADOW}, 0 0 18px ${accent.glow}0.35)`,
             letterSpacing: "0.015em",
             wordBreak: "break-word",
           }}
@@ -219,11 +169,11 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
               fontFamily: "'Cormorant Garamond', Georgia, serif",
               fontStyle: "italic",
               fontWeight: 500,
-              fontSize: "clamp(0.76rem, 1.1vw, 0.86rem)",
-              color: "rgba(220,200,255,0.95)",
+              fontSize: "clamp(0.74rem, 1.1vw, 0.84rem)",
+              color: "rgba(220,200,255,0.9)",
               lineHeight: 1.55,
               wordBreak: "break-word",
-              textShadow: "1px 1px 3px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.7)",
+              textShadow: TEXT_SHADOW,
             }}
           >
             {artwork.description}
@@ -234,35 +184,24 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
             <div
               className="rounded-full shrink-0"
-              style={{ width: 3, height: 3, background: accent.border + "0.65)", boxShadow: `0 0 4px ${accent.glow}0.5)` }}
+              style={{ width: 3, height: 3, background: `${accent.border}0.6)`, boxShadow: `0 0 4px ${accent.glow}0.4)` }}
             />
             <span
               className="truncate"
-              style={{
-                color: "rgba(150,190,210,0.33)",
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
-                letterSpacing: "0.03em",
-                fontSize: "0.68rem",
-              }}
+              style={{ color: "rgba(150,190,210,0.4)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "0.66rem", letterSpacing: "0.03em" }}
             >
               {isValidUrl ? hostname : "link không hợp lệ"}
             </span>
           </div>
 
-          {/* Like */}
+          {/* Like button */}
           <div className="relative shrink-0">
             <AnimatePresence>
               {burst.map((p) => (
                 <motion.div
                   key={p.id}
                   className="absolute rounded-full pointer-events-none"
-                  style={{
-                    width: p.size, height: p.size,
-                    background: p.color,
-                    boxShadow: `0 0 ${p.size * 3}px ${p.color}`,
-                    left: "50%", top: "50%",
-                    translateX: "-50%", translateY: "-50%",
-                  }}
+                  style={{ width: p.size, height: p.size, background: p.color, boxShadow: `0 0 ${p.size * 3}px ${p.color}`, left: "50%", top: "50%", translateX: "-50%", translateY: "-50%" }}
                   initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
                   animate={{ x: Math.cos(p.angle) * p.dist, y: Math.sin(p.angle) * p.dist, opacity: 0, scale: 0 }}
                   exit={{}}
@@ -273,21 +212,15 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
             <motion.button
               onClick={handleLike}
               className="flex items-center gap-1.5 relative z-10 py-1 px-1"
-              style={{
-                color: artwork.likes > 0 ? "rgba(255,155,195,0.95)" : "rgba(197,168,255,0.5)",
-                background: "none", border: "none", cursor: "pointer",
-                touchAction: "manipulation",
-              }}
+              style={{ color: artwork.likes > 0 ? "rgba(255,155,195,0.95)" : "rgba(197,168,255,0.5)", background: "none", border: "none", cursor: "pointer", touchAction: "manipulation" }}
               animate={liking ? { scale: [1, 1.6, 0.85, 1.25, 1], rotate: [0, -10, 10, -4, 0] } : {}}
               whileTap={{ scale: 0.78 }}
               transition={{ duration: 0.55 }}
               disabled={liking}
               aria-label="Thích"
             >
-              <span style={{ fontSize: "14px", lineHeight: 1, filter: artwork.likes > 0 ? "drop-shadow(0 0 6px rgba(78,205,196,0.9))" : "none" }}>
-                🪼
-              </span>
-              <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 400, fontSize: "0.8rem" }}>
+              <span style={{ fontSize: "14px", lineHeight: 1, filter: artwork.likes > 0 ? "drop-shadow(0 0 6px rgba(78,205,196,0.9))" : "none" }}>🪼</span>
+              <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 400, fontSize: "0.8rem", textShadow: TEXT_SHADOW }}>
                 {artwork.likes}
               </span>
             </motion.button>
@@ -298,140 +231,173 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
   );
 }
 
-/* ─── Shelf section ───────────────────────────────────────────── */
-interface ShelfSectionProps {
-  shelf: Shelf;
-  shelfIndex: number;
-  onLike: (artId: string) => void;
-  highlightIds?: Set<string>;
+/* ─── Shelf Directory Modal ───────────────────────────────────── */
+interface ShelfDirectoryProps {
+  shelves: Shelf[];
+  currentIndex: number;
+  onSelect: (idx: number) => void;
+  onClose: () => void;
 }
 
-function ShelfSection({ shelf, shelfIndex, onLike, highlightIds }: ShelfSectionProps) {
-  const visible = highlightIds
-    ? shelf.artworks.filter((a) => highlightIds.has(a.id))
-    : shelf.artworks;
+function ShelfDirectory({ shelves, currentIndex, onSelect, onClose }: ShelfDirectoryProps) {
+  const nonEmpty = shelves.filter((s) => s.artworks.length > 0);
+  const backdropRef = useRef<HTMLDivElement>(null);
 
-  if (!visible.length) return null;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: shelfIndex * 0.1, duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="mb-8"
+      ref={backdropRef}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.55)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        zIndex: 200,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+      }}
     >
-      {/* Shelf name header */}
-      <div className="flex items-center gap-3 mb-3">
-        <motion.div
-          className="rounded-full"
-          style={{
-            width: 5, height: 5,
-            background: NEON[shelfIndex % NEON.length].border + "0.8)",
-            boxShadow: `0 0 8px ${NEON[shelfIndex % NEON.length].glow}0.6)`,
-          }}
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 2.5, repeat: Infinity, delay: shelfIndex * 0.3 }}
-        />
-        <h2
-          style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontWeight: 500,
-            fontStyle: "italic",
-            fontSize: "clamp(0.85rem, 1.5vw, 1rem)",
-            letterSpacing: "0.14em",
-            color: "rgba(197,168,255,0.85)",
-            textTransform: "uppercase",
-            textShadow: "0 2px 4px rgba(0,0,0,0.8)",
-          }}
-        >
-          {shelf.shelfName}
-        </h2>
-        <div
-          className="flex-1 h-px"
-          style={{ background: "linear-gradient(to right, rgba(197,168,255,0.15), transparent)" }}
-        />
-      </div>
-
-      {/* Artwork grid */}
-      <div
-        className="overflow-hidden"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92, y: 16 }}
+        animate={{ opacity: 1, scale: 1,    y: 0  }}
+        exit={{ opacity: 0, scale: 0.92, y: 16 }}
+        transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
         style={{
+          background: "rgba(8,18,42,0.82)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          border: "1px solid rgba(197,168,255,0.2)",
+          borderRadius: "20px",
+          padding: "28px 24px",
           width: "100%",
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: "1px",
-          background: "rgba(255,255,255,0.03)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          border: "1px solid rgba(255,255,255,0.15)",
-          borderRadius: "10px",
+          maxWidth: 380,
+          maxHeight: "70vh",
+          overflowY: "auto",
+          boxShadow: "0 24px 64px rgba(0,0,10,0.6)",
         }}
       >
-        {visible.map((art, idx) => (
-          <ArtworkCell
-            key={art.id}
-            artwork={art}
-            weight={1}
-            accent={NEON[idx % NEON.length]}
-            onLike={() => onLike(art.id)}
-            isLast={true}
-          />
-        ))}
-      </div>
+        {/* Modal title */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+          <h2 style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontWeight: 500,
+            fontSize: "1.1rem",
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: "rgba(197,168,255,0.9)",
+            textShadow: TEXT_SHADOW,
+          }}>
+            ✦ Danh mục Kệ
+          </h2>
+          <button
+            onClick={onClose}
+            style={{ background: "none", border: "none", color: "rgba(197,168,255,0.4)", fontSize: "18px", cursor: "pointer", padding: "4px 8px", lineHeight: 1 }}
+            aria-label="Đóng"
+          >✕</button>
+        </div>
+
+        {/* Ocean divider */}
+        <div style={{ textAlign: "center", color: "rgba(255,255,255,0.35)", fontSize: "14px", letterSpacing: "3px", marginBottom: "18px", userSelect: "none" }}>
+          𓆝 𓆟 𓆞 𓇼
+        </div>
+
+        {nonEmpty.length === 0 ? (
+          <p style={{ textAlign: "center", color: "rgba(197,168,255,0.35)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic" }}>
+            Chưa có kệ nào
+          </p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {nonEmpty.map((shelf, idx) => {
+              const isActive = idx === currentIndex;
+              return (
+                <motion.button
+                  key={shelf.id}
+                  onClick={() => { onSelect(idx); onClose(); }}
+                  whileTap={{ scale: 0.97 }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    background: isActive ? "rgba(78,205,196,0.08)" : "transparent",
+                    border: `1px solid ${isActive ? "rgba(78,205,196,0.3)" : "rgba(255,255,255,0.06)"}`,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "all 0.2s",
+                    width: "100%",
+                  }}
+                >
+                  <motion.div
+                    style={{
+                      width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
+                      background: isActive ? "rgba(78,205,196,0.9)" : `${NEON[idx % NEON.length].border}0.5)`,
+                      boxShadow: isActive ? "0 0 8px rgba(78,205,196,0.7)" : "none",
+                    }}
+                    animate={isActive ? { opacity: [0.5, 1, 0.5] } : {}}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <span style={{
+                    fontFamily: "'Cormorant Garamond', Georgia, serif",
+                    fontWeight: isActive ? 600 : 400,
+                    fontSize: "0.95rem",
+                    letterSpacing: "0.06em",
+                    color: isActive ? "rgba(78,205,196,0.95)" : "rgba(240,244,255,0.75)",
+                    textShadow: TEXT_SHADOW,
+                    flex: 1,
+                  }}>
+                    {shelf.shelfName}
+                  </span>
+                  <span style={{ color: "rgba(197,168,255,0.35)", fontSize: "0.72rem", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+                    {shelf.artworks.length} tác phẩm
+                  </span>
+                </motion.button>
+              );
+            })}
+          </div>
+        )}
+      </motion.div>
     </motion.div>
   );
 }
 
-/* ─── Skeleton ────────────────────────────────────────────────── */
-function SkeletonShelf() {
-  return (
-    <div className="mb-8">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="rounded-full" style={{ width: 5, height: 5, background: "rgba(197,168,255,0.2)" }} />
-        <div className="h-3 rounded-sm" style={{ width: 120, background: "rgba(197,168,255,0.1)" }} />
-      </div>
-      {[0].map((ri) => (
-        <div key={ri} style={{
-          width: "100%",
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: "1px",
-          background: "rgba(255,255,255,0.03)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          border: "1px solid rgba(255,255,255,0.15)",
-          borderRadius: "10px",
-          overflow: "hidden",
-        }}>
-          {[0, 1].map((ci) => (
-            <motion.div
-              key={ci}
-              style={{ minHeight: 130, padding: "22px 18px 18px", background: "rgba(255,255,255,0.03)" }}
-              animate={{ opacity: [0.25, 0.5, 0.25] }}
-              transition={{ duration: 2, repeat: Infinity, delay: ci * 0.3 }}
-            >
-              <div style={{ height: 18, borderRadius: 4, background: "rgba(197,168,255,0.1)", width: "65%", marginBottom: 10 }} />
-              <div style={{ height: 12, borderRadius: 4, background: "rgba(78,205,196,0.07)", width: "80%", marginBottom: 8 }} />
-              <div style={{ height: 12, borderRadius: 4, background: "rgba(78,205,196,0.05)", width: "45%" }} />
-            </motion.div>
-          ))}
-        </div>
-      ))}
-    </div>
-  );
+/* ─── Main ShowcaseShelf ──────────────────────────────────────── */
+interface ShowcaseShelfProps {
+  shelves: Shelf[];
+  search: string;
+  onSearchChange: (v: string) => void;
+  onLike: (shelfId: string, artId: string) => void;
 }
 
-/* ─── Main component ──────────────────────────────────────────── */
-const ITEMS_PER_PAGE = 6;
-
 export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: ShowcaseShelfProps) {
-  const [page, setPage] = useState(0);
+  const [shelfIndex, setShelfIndex]     = useState(0);
+  const [dirOpen, setDirOpen]           = useState(false);
   const q = search.trim().toLowerCase();
 
-  // Build a set of artwork IDs that match the search
-  const matchIds = useMemo<Set<string> | null>(() => {
+  /* Non-empty shelves */
+  const nonEmpty = useMemo(() => shelves.filter((s) => s.artworks.length > 0), [shelves]);
+
+  /* Clamp shelfIndex */
+  const safeIdx     = Math.min(shelfIndex, Math.max(0, nonEmpty.length - 1));
+  const currentShelf = nonEmpty[safeIdx] ?? null;
+
+  /* Search mode: flatten + filter across all shelves */
+  const searchResults = useMemo<Array<{ artwork: Artwork; shelfId: string; shelfName: string; accent: typeof NEON[0] }> | null>(() => {
     if (!q) return null;
-    const ids = new Set<string>();
+    const items: Array<{ artwork: Artwork; shelfId: string; shelfName: string; accent: typeof NEON[0] }> = [];
     for (const shelf of shelves) {
       const shelfMatch = shelf.shelfName.toLowerCase().includes(q);
       for (const art of shelf.artworks) {
@@ -441,100 +407,94 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
           art.description.toLowerCase().includes(q) ||
           art.link.toLowerCase().includes(q)
         ) {
-          ids.add(art.id);
+          items.push({ artwork: art, shelfId: shelf.id, shelfName: shelf.shelfName, accent: NEON[items.length % NEON.length] });
         }
       }
     }
-    return ids;
+    return items;
   }, [shelves, q]);
 
-  const visibleShelves = useMemo(() => {
-    if (!matchIds) return shelves.filter((s) => s.artworks.length > 0);
-    return shelves.filter((s) => s.artworks.some((a) => matchIds.has(a.id)));
-  }, [shelves, matchIds]);
+  /* Reset shelf to 0 when search is cleared */
+  useEffect(() => { if (!q) setShelfIndex(0); }, [q]);
 
-  // Flatten all visible artworks with shelf reference
-  const allItems = useMemo(() => {
-    let idx = 0;
-    const items: Array<{ artwork: Artwork; shelfId: string; accent: typeof NEON[0]; shelfName: string }> = [];
-    for (const shelf of visibleShelves) {
-      const arts = matchIds ? shelf.artworks.filter((a) => matchIds.has(a.id)) : shelf.artworks;
-      for (const artwork of arts) {
-        items.push({ artwork, shelfId: shelf.id, accent: NEON[idx % NEON.length], shelfName: shelf.shelfName });
-        idx++;
-      }
-    }
-    return items;
-  }, [visibleShelves, matchIds]);
+  const isEmpty    = shelves.length === 0;
+  const noResults  = searchResults !== null && searchResults.length === 0;
+  const isSearching = searchResults !== null;
 
-  // Reset to page 0 whenever search changes
-  useEffect(() => { setPage(0); }, [search]);
-
-  const totalPages = Math.max(1, Math.ceil(allItems.length / ITEMS_PER_PAGE));
-  const safePage = Math.min(page, totalPages - 1);
-  const pageItems = allItems.slice(safePage * ITEMS_PER_PAGE, (safePage + 1) * ITEMS_PER_PAGE);
-
-  const isEmpty = shelves.every((s) => s.artworks.length === 0) && shelves.length === 0;
-  const noResults = !isEmpty && visibleShelves.length === 0 && !!q;
+  /* Current shelf artworks for normal mode */
+  const shelfArtworks = useMemo(() =>
+    currentShelf
+      ? currentShelf.artworks.map((art, i) => ({
+          artwork: art,
+          shelfId: currentShelf.id,
+          accent: NEON[i % NEON.length],
+        }))
+      : [],
+    [currentShelf]
+  );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      <SearchBar value={search} onChange={onSearchChange} />
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
 
-      {/* Empty library */}
-      {isEmpty && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center py-20"
-        >
-          <motion.div
-            className="flex justify-center gap-2 mb-6"
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+      {/* Row: search + directory button */}
+      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+        <div style={{ flex: 1 }}>
+          <SearchBar value={search} onChange={onSearchChange} />
+        </div>
+
+        {/* Directory button */}
+        {!isEmpty && (
+          <motion.button
+            onClick={() => setDirOpen(true)}
+            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            style={{
+              flexShrink: 0,
+              width: 42, height: 42,
+              borderRadius: "12px",
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(197,168,255,0.25)",
+              color: "rgba(197,168,255,0.7)",
+              fontSize: "18px",
+              cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              backdropFilter: "blur(2px)",
+              WebkitBackdropFilter: "blur(2px)",
+            }}
+            aria-label="Danh mục Kệ"
+            title="Danh mục Kệ"
           >
+            𓆉
+          </motion.button>
+        )}
+      </div>
+
+      {/* ── Empty library ── */}
+      {isEmpty && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-20">
+          <motion.div className="flex justify-center gap-2 mb-6" animate={{ y: [0, -8, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}>
             {[0, 1, 2, 3, 4].map((i) => (
               <motion.div
                 key={i}
                 className="rounded-full"
-                style={{
-                  width: i === 2 ? 7 : 4, height: i === 2 ? 7 : 4,
-                  background: i % 2 === 0 ? "rgba(78,205,196,0.45)" : "rgba(197,168,255,0.45)",
-                  boxShadow: i === 2 ? "0 0 10px rgba(197,168,255,0.5)" : "none",
-                }}
+                style={{ width: i === 2 ? 7 : 4, height: i === 2 ? 7 : 4, background: i % 2 === 0 ? "rgba(78,205,196,0.45)" : "rgba(197,168,255,0.45)" }}
                 animate={{ opacity: [0.3, 0.8, 0.3] }}
                 transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.3 }}
               />
             ))}
           </motion.div>
-          <p style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontWeight: 300, fontSize: "1.3rem",
-            color: "rgba(240,244,255,0.38)", fontStyle: "italic", lineHeight: 1.7,
-            textShadow: "0 2px 4px rgba(0,0,0,0.8)",
-          }}>
+          <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 300, fontSize: "1.3rem", color: "rgba(240,244,255,0.38)", fontStyle: "italic", lineHeight: 1.7, textShadow: TEXT_SHADOW }}>
             Kệ đang trống...
             <br />
-            <span style={{ fontSize: "0.92rem", color: "rgba(197,168,255,0.28)" }}>
-              biển chờ đón những tác phẩm đầu tiên
-            </span>
+            <span style={{ fontSize: "0.92rem", color: "rgba(197,168,255,0.28)" }}>biển chờ đón những tác phẩm đầu tiên</span>
           </p>
         </motion.div>
       )}
 
-      {/* No search results */}
+      {/* ── No search results ── */}
       {noResults && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center py-14"
-        >
-          <p style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontWeight: 300, fontStyle: "italic",
-            fontSize: "1.05rem", color: "rgba(197,168,255,0.4)", lineHeight: 1.7,
-            textShadow: "0 2px 4px rgba(0,0,0,0.8)",
-          }}>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center py-14">
+          <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 300, fontStyle: "italic", fontSize: "1.05rem", color: "rgba(197,168,255,0.4)", lineHeight: 1.7, textShadow: TEXT_SHADOW }}>
             Không tìm thấy tác phẩm nào...
             <br />
             <span style={{ fontSize: "0.82rem", color: "rgba(197,168,255,0.25)" }}>thử từ khác nhé</span>
@@ -542,135 +502,172 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
         </motion.div>
       )}
 
-      {/* Ocean divider decoration */}
-      {!isEmpty && !noResults && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 1.2 }}
-          aria-hidden
-          style={{
-            textAlign: "center",
-            color: "rgba(255,255,255,0.6)",
-            fontSize: "18px",
-            marginBottom: "16px",
-            marginTop: "-4px",
-            textShadow: "0 0 8px rgba(255,255,255,0.4)",
-            letterSpacing: "4px",
-            userSelect: "none",
-            pointerEvents: "none",
-          }}
-        >
-          𓆝 𓆟 𓆞 𓇼 ⋆.° 𓆉 𓆡 ⋆.˚ 𓇼
-        </motion.div>
-      )}
+      {/* ── SEARCH RESULTS MODE ── */}
+      {isSearching && !noResults && searchResults && (
+        <div>
+          {/* Ocean divider */}
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 1 }}
+            aria-hidden
+            style={{ textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: "16px", letterSpacing: "4px", margin: "4px 0 14px", userSelect: "none", pointerEvents: "none", textShadow: "0 0 8px rgba(255,255,255,0.35)" }}
+          >
+            𓆝 𓆟 𓆞 𓇼 ⋆.° 𓆉 𓆡 ⋆.˚ 𓇼
+          </motion.div>
 
-      {/* Paginated artwork grid */}
-      {!isEmpty && !noResults && (
-        <div
-          style={{
-            background: "rgba(255,255,255,0.05)",
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
-            border: "none",
-            borderRadius: "20px",
-            padding: "12px",
-          }}
-        >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={safePage}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25 }}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: "12px",
-              }}
-            >
-              {pageItems.map(({ artwork, shelfId, accent }) => (
-                <ArtworkCell
-                  key={artwork.id}
-                  artwork={artwork}
-                  weight={1}
-                  accent={accent}
-                  onLike={() => onLike(shelfId, artwork.id)}
-                  isLast={true}
-                />
+          <p style={{ textAlign: "center", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontSize: "0.75rem", color: "rgba(197,168,255,0.45)", letterSpacing: "0.1em", marginBottom: "12px", textShadow: TEXT_SHADOW }}>
+            {searchResults.length} kết quả
+          </p>
+
+          {/* Scrollable results */}
+          <div style={{ maxHeight: "60vh", overflowY: "auto", paddingRight: "4px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
+              {searchResults.map(({ artwork, shelfId, accent }) => (
+                <ArtworkCell key={artwork.id} artwork={artwork} accent={accent} onLike={() => onLike(shelfId, artwork.id)} />
               ))}
-            </motion.div>
-          </AnimatePresence>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Pagination controls */}
-      {!isEmpty && !noResults && totalPages > 1 && (
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", paddingTop: "4px", paddingBottom: "8px" }}>
-          {/* Prev */}
-          <motion.button
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={safePage === 0}
-            whileTap={{ scale: 0.88 }}
-            style={{
-              width: 30, height: 30, borderRadius: "50%",
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: safePage === 0 ? "rgba(197,168,255,0.2)" : "rgba(197,168,255,0.6)",
-              fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontSize: "1rem", cursor: safePage === 0 ? "default" : "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              transition: "all 0.2s",
-            }}
-            aria-label="Trang trước"
-          >‹</motion.button>
+      {/* ── NORMAL MODE: 1 shelf at a time ── */}
+      {!isSearching && !isEmpty && currentShelf && (
+        <div>
+          {/* Ocean divider */}
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 1.2 }}
+            aria-hidden
+            style={{ textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: "16px", letterSpacing: "4px", margin: "4px 0 10px", userSelect: "none", pointerEvents: "none", textShadow: "0 0 8px rgba(255,255,255,0.35)" }}
+          >
+            𓆝 𓆟 𓆞 𓇼 ⋆.° 𓆉 𓆡 ⋆.˚ 𓇼
+          </motion.div>
 
-          {/* Page numbers */}
-          {Array.from({ length: totalPages }, (_, i) => (
-            <motion.button
-              key={i}
-              onClick={() => setPage(i)}
-              whileTap={{ scale: 0.88 }}
+          {/* Shelf name */}
+          <AnimatePresence mode="wait">
+            <motion.h2
+              key={currentShelf.id + "-name"}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.3 }}
               style={{
-                width: 32, height: 32, borderRadius: "50%",
-                background: i === safePage ? "rgba(78,205,196,0.12)" : "transparent",
-                border: i === safePage
-                  ? "1px solid rgba(78,205,196,0.5)"
-                  : "1px solid rgba(255,255,255,0.12)",
-                color: i === safePage ? "rgba(78,205,196,0.95)" : "rgba(197,168,255,0.55)",
+                textAlign: "center",
                 fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "0.85rem", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                textShadow: "0 2px 4px rgba(0,0,0,0.8)",
-                transition: "all 0.2s",
+                fontWeight: 500,
+                fontStyle: "italic",
+                fontSize: "clamp(1rem, 2.5vw, 1.4rem)",
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: "#ffffff",
+                textShadow: `${TEXT_SHADOW}, 0 0 20px rgba(197,168,255,0.4)`,
+                marginBottom: "16px",
               }}
-              aria-label={`Trang ${i + 1}`}
-              aria-current={i === safePage ? "page" : undefined}
             >
-              {i + 1}
-            </motion.button>
-          ))}
+              {currentShelf.shelfName}
+            </motion.h2>
+          </AnimatePresence>
 
-          {/* Next */}
-          <motion.button
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            disabled={safePage === totalPages - 1}
-            whileTap={{ scale: 0.88 }}
+          {/* Internal-scroll artwork list */}
+          <div
             style={{
-              width: 30, height: 30, borderRadius: "50%",
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: safePage === totalPages - 1 ? "rgba(197,168,255,0.2)" : "rgba(197,168,255,0.6)",
-              fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontSize: "1rem", cursor: safePage === totalPages - 1 ? "default" : "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              transition: "all 0.2s",
+              height: "60vh",
+              overflowY: "auto",
+              paddingRight: "4px",
+              scrollbarWidth: "thin",
+              scrollbarColor: "rgba(197,168,255,0.2) transparent",
             }}
-            aria-label="Trang tiếp"
-          >›</motion.button>
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentShelf.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0  }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", paddingBottom: "8px" }}
+              >
+                {shelfArtworks.map(({ artwork, shelfId, accent }) => (
+                  <ArtworkCell key={artwork.id} artwork={artwork} accent={accent} onLike={() => onLike(shelfId, artwork.id)} />
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Shelf navigation */}
+          {nonEmpty.length > 1 && (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", paddingTop: "12px" }}>
+              {/* Prev */}
+              <motion.button
+                onClick={() => setShelfIndex((i) => Math.max(0, i - 1))}
+                disabled={safeIdx === 0}
+                whileTap={{ scale: 0.88 }}
+                style={{
+                  width: 32, height: 32, borderRadius: "50%",
+                  background: "transparent",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  color: safeIdx === 0 ? "rgba(197,168,255,0.15)" : "rgba(197,168,255,0.6)",
+                  fontSize: "1.1rem", cursor: safeIdx === 0 ? "default" : "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}
+                aria-label="Kệ trước"
+              >‹</motion.button>
+
+              {/* Shelf dots */}
+              {nonEmpty.map((_, idx) => (
+                <motion.button
+                  key={idx}
+                  onClick={() => setShelfIndex(idx)}
+                  whileTap={{ scale: 0.88 }}
+                  style={{
+                    width: idx === safeIdx ? 28 : 24,
+                    height: idx === safeIdx ? 28 : 24,
+                    borderRadius: "50%",
+                    background: idx === safeIdx ? "rgba(78,205,196,0.1)" : "transparent",
+                    border: `1px solid ${idx === safeIdx ? "rgba(78,205,196,0.5)" : "rgba(255,255,255,0.12)"}`,
+                    color: idx === safeIdx ? "rgba(78,205,196,0.95)" : "rgba(197,168,255,0.45)",
+                    fontFamily: "'Cormorant Garamond', Georgia, serif",
+                    fontSize: "0.78rem", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    textShadow: idx === safeIdx ? TEXT_SHADOW : "none",
+                    transition: "all 0.2s",
+                  }}
+                  aria-label={`Kệ ${idx + 1}`}
+                  aria-current={idx === safeIdx ? "page" : undefined}
+                >
+                  {idx + 1}
+                </motion.button>
+              ))}
+
+              {/* Next */}
+              <motion.button
+                onClick={() => setShelfIndex((i) => Math.min(nonEmpty.length - 1, i + 1))}
+                disabled={safeIdx === nonEmpty.length - 1}
+                whileTap={{ scale: 0.88 }}
+                style={{
+                  width: 32, height: 32, borderRadius: "50%",
+                  background: "transparent",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  color: safeIdx === nonEmpty.length - 1 ? "rgba(197,168,255,0.15)" : "rgba(197,168,255,0.6)",
+                  fontSize: "1.1rem", cursor: safeIdx === nonEmpty.length - 1 ? "default" : "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}
+                aria-label="Kệ tiếp"
+              >›</motion.button>
+            </div>
+          )}
         </div>
       )}
+
+      {/* Shelf Directory Modal */}
+      <AnimatePresence>
+        {dirOpen && (
+          <ShelfDirectory
+            shelves={nonEmpty}
+            currentIndex={safeIdx}
+            onSelect={setShelfIndex}
+            onClose={() => setDirOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
