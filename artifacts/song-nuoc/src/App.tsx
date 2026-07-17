@@ -109,6 +109,7 @@ function OceanApp() {
           zIndex: -1,
           transform: "translateZ(0)",
           willChange: "transform",
+          pointerEvents: "none",
         }}
       >
         <source src="/bg-video.mp4" type="video/mp4" />
