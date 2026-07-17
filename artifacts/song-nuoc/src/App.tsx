@@ -20,6 +20,7 @@ const AdminPanel = lazy(() =>
 ──────────────────────────────────────────────────────────────── */
 const PLAYLIST = [
   "/bg-music.mp3",
+  "/nhac_video_1.mp4",
 ];
 
 /**
