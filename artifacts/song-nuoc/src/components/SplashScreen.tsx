@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SplashScreenProps {
@@ -89,6 +89,7 @@ export function SplashScreen({ onEnter, audioRef }: SplashScreenProps) {
                 background: p.color,
                 boxShadow: `0 0 ${p.size * 5}px ${p.color}`,
                 zIndex: 1,
+                willChange: "transform, opacity",
               }}
               animate={{
                 y: [0, -70, -150],

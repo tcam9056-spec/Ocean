@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, memo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import type { Shelf, Artwork } from "@/hooks/useShelvesStore";
@@ -18,7 +18,7 @@ const NEON = [
 const OCEAN_STRIP = "༄ ⋆ ˚ ｡ ° 𓆉 𓆝 𓆟 〰 ≋ ࿐";
 
 /* ─── SearchBar ────────────────────────────────────────────────── */
-function SearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+const SearchBar = memo(function SearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}
@@ -81,7 +81,7 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
       </AnimatePresence>
     </motion.div>
   );
-}
+});
 
 /* ─── Artwork card ────────────────────────────────────────────── */
 interface ArtworkCellProps {
@@ -90,7 +90,7 @@ interface ArtworkCellProps {
   onLike: () => void;
 }
 
-function ArtworkCell({ artwork, accent, onLike }: ArtworkCellProps) {
+const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: ArtworkCellProps) {
   const [liking, setLiking]  = useState(false);
   const [burst, setBurst]    = useState<{ id: number; angle: number; color: string; dist: number; size: number }[]>([]);
 
@@ -232,7 +232,7 @@ function ArtworkCell({ artwork, accent, onLike }: ArtworkCellProps) {
       </a>
     </div>
   );
-}
+});
 
 /* ─── Shelf Dropdown ──────────────────────────────────────────── */
 interface ShelfDropdownProps {

@@ -55,7 +55,9 @@ export function useShelvesStore() {
   const { data: shelves = [] } = useQuery<Shelf[]>({
     queryKey: SHELVES_KEY,
     queryFn: () => apiFetch("/api/shelves"),
-    staleTime: 10_000,
+    staleTime: 60_000,
+    gcTime: 120_000,
+    refetchOnWindowFocus: false,
   });
 
   const invalidate = useCallback(() => {
@@ -119,12 +121,26 @@ export function useShelvesStore() {
   }, [invalidate]);
 
   const likeArtwork = useCallback((shelfId: string, artId: string) => {
-    apiFetch(`/api/shelves/${shelfId}/artworks/${artId}/like`, {
-      method: "POST",
-    })
-      .then(invalidate)
-      .catch((err: unknown) => console.error("[likeArtwork]", err));
-  }, [invalidate]);
+    // Optimistic update — no full refetch, UI responds instantly
+    queryClient.setQueryData<Shelf[]>(SHELVES_KEY, (old) => {
+      if (!old) return old;
+      return old.map((shelf) => {
+        if (shelf.id !== shelfId) return shelf;
+        return {
+          ...shelf,
+          artworks: shelf.artworks.map((art) =>
+            art.id === artId ? { ...art, likes: art.likes + 1 } : art
+          ),
+        };
+      });
+    });
+    // Sync to server; reconcile on error
+    apiFetch(`/api/shelves/${shelfId}/artworks/${artId}/like`, { method: "POST" })
+      .catch((err: unknown) => {
+        console.error("[likeArtwork]", err);
+        invalidate(); // rollback by re-fetching truth
+      });
+  }, [queryClient, invalidate]);
 
   const refresh = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: SHELVES_KEY });

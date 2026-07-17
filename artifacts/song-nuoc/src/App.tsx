@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, memo } from "react";
 import { Toaster } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -13,7 +13,7 @@ import { useShelvesStore } from "@/hooks/useShelvesStore";
 const AUDIO_SRC = "/bg-music.mp3";
 
 /* ─── Mute button ─────────────────────────────────────────────── */
-function MuteButton({ isMuted, onToggle }: { isMuted: boolean; onToggle: () => void }) {
+const MuteButton = memo(function MuteButton({ isMuted, onToggle }: { isMuted: boolean; onToggle: () => void }) {
   return (
     <motion.button
       className="fixed top-5 right-5 z-50 rounded-full flex items-center justify-center"
@@ -28,6 +28,8 @@ function MuteButton({ isMuted, onToggle }: { isMuted: boolean; onToggle: () => v
         fontSize: "16px",
         touchAction: "manipulation",
         WebkitTapHighlightColor: "transparent",
+        transform: "translateZ(0)",
+        willChange: "transform",
       }}
       whileHover={{ scale: 1.1, boxShadow: "0 0 18px rgba(78,205,196,0.2)" }}
       whileTap={{ scale: 0.9 }}
@@ -39,7 +41,7 @@ function MuteButton({ isMuted, onToggle }: { isMuted: boolean; onToggle: () => v
       {isMuted ? "🔇" : "🎵"}
     </motion.button>
   );
-}
+});
 
 /* ─── Main app ────────────────────────────────────────────────── */
 function OceanApp() {
@@ -90,6 +92,7 @@ function OceanApp() {
         loop
         muted
         playsInline
+        preload="none"
         style={{
           position: "fixed",
           inset: 0,
@@ -97,6 +100,8 @@ function OceanApp() {
           height: "100%",
           objectFit: "cover",
           zIndex: -1,
+          transform: "translateZ(0)",
+          willChange: "transform",
         }}
       >
         <source src="/bg-video.mp4" type="video/mp4" />

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 import { motion } from "framer-motion";
 
 interface ParticleData {
@@ -46,6 +46,7 @@ function BioLuminParticles() {
             height: p.size,
             background: p.color,
             boxShadow: `0 0 ${p.size * 5}px ${p.color}, 0 0 ${p.size * 10}px ${p.color}`,
+            willChange: "transform, opacity",
           }}
           animate={{
             y: [0, -90, -190],
@@ -152,6 +153,7 @@ function FloatingBubbles() {
             border: "1px solid rgba(150,220,255,0.35)",
             background: "rgba(200,240,255,0.05)",
             boxShadow: `inset 0 0 ${b.size * 0.4}px rgba(255,255,255,0.25), 0 0 ${b.size * 0.6}px rgba(120,200,255,0.15)`,
+            willChange: "transform, opacity",
           }}
           animate={{
             y: [0, -(b.size * 15 + 120)],
@@ -220,7 +222,7 @@ function FloatingFishLayer() {
         <motion.div
           key={f.id}
           className="absolute pointer-events-none select-none"
-          style={{ top: f.top, opacity: f.opacity, zIndex: 2, filter: "blur(0.3px)" }}
+          style={{ top: f.top, opacity: f.opacity, zIndex: 2, filter: "blur(0.3px)", willChange: "transform" }}
           animate={{
             x: [f.startX, f.endX],
             y: [0, -f.floatY, f.floatY * 0.5, -f.floatY * 0.3, 0],
@@ -275,6 +277,7 @@ function FloatingJellyfishLayer() {
             top: `${j.topStart}%`,
             zIndex: 2,
             filter: `blur(1px) drop-shadow(0 0 ${j.size * 0.3}px ${j.color})`,
+            willChange: "transform",
           }}
           animate={{
             y: [0, -j.size * 0.8, 0],
@@ -304,6 +307,7 @@ export function OceanBackground() {
         loop
         muted
         playsInline
+        preload="none"
         style={{
           position: "absolute",
           inset: 0,
@@ -312,6 +316,8 @@ export function OceanBackground() {
           objectFit: "cover",
           zIndex: 0,
           pointerEvents: "none",
+          transform: "translateZ(0)",
+          willChange: "transform",
         }}
       >
         <source
@@ -380,6 +386,7 @@ export function OceanBackground() {
             transformOrigin: "top center",
             filter: "blur(3px)",
             zIndex: 2,
+            willChange: "opacity",
           }}
           animate={{ opacity: [0.12, 0.45, 0.12] }}
           transition={{
