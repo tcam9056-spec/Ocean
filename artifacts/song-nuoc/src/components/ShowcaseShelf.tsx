@@ -50,25 +50,26 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
         style={{
           width: "100%",
           background: "transparent",
-          border: "1px solid rgba(255,255,255,0.2)",
-          borderRadius: "10px",
+          border: "2px dashed rgba(255,255,255,0.6)",
+          borderRadius: "16px",
           padding: "11px 20px 11px 38px",
-          color: "rgba(240,244,255,0.92)",
+          color: "#ffffff",
           fontSize: "0.85rem",
           fontFamily: "'Cormorant Garamond', Georgia, serif",
           fontWeight: 500,
           letterSpacing: "0.04em",
           outline: "none",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
+          boxShadow: "0 0 15px rgba(255,255,255,0.15), 0 2px 12px rgba(0,0,0,0.3)",
+          textShadow: "1px 1px 3px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.7)",
           transition: "border-color 0.3s, box-shadow 0.3s",
         }}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = "rgba(78,205,196,0.5)";
-          e.currentTarget.style.boxShadow = "0 0 0 2px rgba(78,205,196,0.15), 0 2px 12px rgba(0,0,0,0.15)";
+          e.currentTarget.style.borderColor = "rgba(78,205,196,0.8)";
+          e.currentTarget.style.boxShadow = "0 0 15px rgba(78,205,196,0.25), 0 0 0 2px rgba(78,205,196,0.15)";
         }}
         onBlur={(e) => {
-          e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
-          e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.15)";
+          e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)";
+          e.currentTarget.style.boxShadow = "0 0 15px rgba(255,255,255,0.15), 0 2px 12px rgba(0,0,0,0.3)";
         }}
         aria-label="Tìm kiếm"
       />
@@ -164,8 +165,9 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
       style={{
         minHeight: 130,
         background: "transparent",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: "8px",
+        border: "2px dashed rgba(255,255,255,0.55)",
+        borderRadius: "16px",
+        boxShadow: "0 0 15px rgba(255,255,255,0.12)",
       }}
     >
       {/* Hover glow */}
@@ -200,8 +202,8 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
             fontFamily: "'Cormorant Garamond', Georgia, serif",
             fontWeight: 700,
             fontSize: "clamp(1rem, 1.6vw, 1.2rem)",
-            color: "rgba(255,255,255,0.97)",
-            textShadow: `0 2px 4px rgba(0,0,0,0.8), 0 0 18px ${accent.glow}0.45)`,
+            color: "#ffffff",
+            textShadow: `1px 1px 3px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.7), 0 0 18px ${accent.glow}0.4)`,
             letterSpacing: "0.015em",
             wordBreak: "break-word",
           }}
@@ -217,10 +219,10 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
               fontStyle: "italic",
               fontWeight: 500,
               fontSize: "clamp(0.76rem, 1.1vw, 0.86rem)",
-              color: "rgba(197,168,255,0.85)",
+              color: "rgba(220,200,255,0.95)",
               lineHeight: 1.55,
               wordBreak: "break-word",
-              textShadow: "0 2px 4px rgba(0,0,0,0.8)",
+              textShadow: "1px 1px 3px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.7)",
             }}
           >
             {artwork.description}
@@ -541,31 +543,110 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
 
       {/* Paginated artwork grid */}
       {!isEmpty && !noResults && (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={safePage}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25 }}
+        <div
+          style={{
+            position: "relative",
+            background: "transparent",
+            border: "2px dashed rgba(255,255,255,0.45)",
+            borderRadius: "20px",
+            boxShadow: "0 0 15px rgba(255,255,255,0.12), inset 0 0 20px rgba(255,255,255,0.02)",
+            padding: "18px 12px 12px",
+          }}
+        >
+          {/* Corner decorations — top-left */}
+          <span
+            aria-hidden
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: "8px",
+              position: "absolute",
+              top: -11,
+              left: 10,
+              fontSize: "13px",
+              lineHeight: 1,
+              color: "rgba(255,255,255,0.7)",
+              textShadow: "0 0 10px rgba(255,255,255,0.6)",
+              pointerEvents: "none",
+              letterSpacing: "2px",
+              userSelect: "none",
             }}
-          >
-            {pageItems.map(({ artwork, shelfId, accent, shelfName }) => (
-              <ArtworkCell
-                key={artwork.id}
-                artwork={artwork}
-                weight={1}
-                accent={accent}
-                onLike={() => onLike(shelfId, artwork.id)}
-                isLast={true}
-              />
-            ))}
-          </motion.div>
-        </AnimatePresence>
+          >𓆝 𓆟 𓆞</span>
+
+          {/* Corner decorations — top-right */}
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: -11,
+              right: 10,
+              fontSize: "13px",
+              lineHeight: 1,
+              color: "rgba(255,255,255,0.7)",
+              textShadow: "0 0 10px rgba(255,255,255,0.6)",
+              pointerEvents: "none",
+              letterSpacing: "2px",
+              userSelect: "none",
+            }}
+          >𓆡 ⋆.° 𓇼</span>
+
+          {/* Corner decorations — bottom-left */}
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              bottom: -11,
+              left: 10,
+              fontSize: "13px",
+              lineHeight: 1,
+              color: "rgba(255,255,255,0.7)",
+              textShadow: "0 0 10px rgba(255,255,255,0.6)",
+              pointerEvents: "none",
+              letterSpacing: "2px",
+              userSelect: "none",
+            }}
+          >𓇼 ⋆｡𖦹 ˚</span>
+
+          {/* Corner decorations — bottom-right */}
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              bottom: -11,
+              right: 10,
+              fontSize: "13px",
+              lineHeight: 1,
+              color: "rgba(255,255,255,0.7)",
+              textShadow: "0 0 10px rgba(255,255,255,0.6)",
+              pointerEvents: "none",
+              letterSpacing: "2px",
+              userSelect: "none",
+            }}
+          >𓆉 ⋆.˚ 𓇼</span>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={safePage}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: "8px",
+              }}
+            >
+              {pageItems.map(({ artwork, shelfId, accent }) => (
+                <ArtworkCell
+                  key={artwork.id}
+                  artwork={artwork}
+                  weight={1}
+                  accent={accent}
+                  onLike={() => onLike(shelfId, artwork.id)}
+                  isLast={true}
+                />
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       )}
 
       {/* Pagination controls */}

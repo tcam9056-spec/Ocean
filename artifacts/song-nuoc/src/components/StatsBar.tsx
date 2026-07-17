@@ -21,8 +21,8 @@ export function StatsBar({ shelves }: StatsBarProps) {
       className="flex items-center justify-center gap-6 sm:gap-8 py-3 px-6 sm:px-8 mx-auto mb-10 w-fit rounded-full"
       style={{
         background: "transparent",
-        border: "1px solid rgba(255,255,255,0.15)",
-        boxShadow: "0 2px 16px rgba(0,0,0,0.2)",
+        border: "2px dashed rgba(255,255,255,0.55)",
+        boxShadow: "0 0 15px rgba(255,255,255,0.12)",
         maxWidth: "calc(100vw - 2rem)",
       }}
     >
