@@ -114,9 +114,10 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
         alignItems: "center",
         justifyContent: "center",
         padding: "20px 16px",
-        background: "rgba(2,8,20,0.72)",
-        backdropFilter: "blur(14px)",
-        WebkitBackdropFilter: "blur(14px)",
+        /* Overlay rất nhạt để đại dương phía sau hiện qua kính modal */
+        background: "rgba(0,8,28,0.28)",
+        backdropFilter: "blur(2px)",
+        WebkitBackdropFilter: "blur(2px)",
       }}
     >
       <motion.div
@@ -124,6 +125,7 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.88, y: 24, opacity: 0 }}
         transition={{ duration: 0.32, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="plot-modal-glass"
         style={{
           position: "relative",
           width: "100%",
@@ -131,12 +133,6 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
           maxHeight: "80vh",
           display: "flex",
           flexDirection: "column",
-          background: "linear-gradient(135deg, rgba(135,206,250,0.15) 0%, rgba(255,182,193,0.15) 100%)",
-          backdropFilter: "blur(16px) saturate(120%)",
-          WebkitBackdropFilter: "blur(16px) saturate(120%)",
-          border: "1px solid rgba(255,255,255,0.5)",
-          borderRadius: "24px",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.15), inset 0 0 20px rgba(255,255,255,0.3)",
         }}
       >
         {/* Header */}
@@ -199,34 +195,18 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
         </button>
 
         {/* Scrollable body */}
-        <div style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "24px 32px 36px",
-          WebkitOverflowScrolling: "touch",
-          overscrollBehavior: "contain",
-          willChange: "transform, scroll-position",
-        }}>
-          {/*
-            dangerouslySetInnerHTML lets Quill HTML render faithfully.
-            color on this container is only the default (white); any
-            <span style="color:…"> set by admin overrides it via inline style precedence.
-          */}
+        <div
+          className="plot-modal-body"
+          style={{ flex: 1, overflowY: "auto", padding: "24px 32px 36px", willChange: "transform" }}
+        >
+          {/* dangerouslySetInnerHTML renders Quill HTML faithfully.
+              Colors come from .plot-modal-body > div in CSS (rgba white default).
+              Admin's <span style="color:…"> override via inline style precedence. */}
           <div
             dangerouslySetInnerHTML={{
               __html: plot
                 ? plot
                 : '<em style="color:rgba(255,255,255,0.5)">Chưa có cốt truyện.</em>',
-            }}
-            style={{
-              fontFamily: "'Cormorant Garamond', Georgia, serif",
-              fontWeight: 400,
-              fontSize: "1rem",
-              color: "#ffffff",
-              lineHeight: 1.85,
-              wordBreak: "break-word",
-              textShadow: "0 1px 3px rgba(0,0,0,0.4)",
-              textRendering: "optimizeLegibility",
             }}
           />
         </div>

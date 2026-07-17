@@ -463,6 +463,40 @@
 .ql-snow button.ql-active .ql-stroke { stroke: rgba(78, 205, 196, 1) !important; }
 .ql-snow button.ql-active .ql-fill   { fill:   rgba(78, 205, 196, 1) !important; }
 
+/* ── PlotModal — lồng kính bóng nước (dùng class để !important hoạt động) ── */
+.plot-modal-glass {
+  background: linear-gradient(
+    135deg,
+    rgba(135, 206, 250, 0.1) 0%,
+    rgba(255, 182, 193, 0.1) 100%
+  ) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
+              inset 0 0 15px rgba(255, 255, 255, 0.2) !important;
+  border-radius: 24px !important;
+}
+
+/* Vùng text cuộn — màu trắng mặc định, span màu admin vẫn override được */
+.plot-modal-body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.plot-modal-body > div {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.85;
+  word-break: break-word;
+  text-rendering: optimizeLegibility;
+}
+/* Cho phép span màu của admin hiển thị đúng — KHÔNG ép màu lên <span> */
+.plot-modal-body > div span[style*="color"] {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
 /* ── Ẩn hoàn toàn controls của video nền trên mọi trình duyệt (iOS/Android) ── */
 video::-webkit-media-controls             { display: none !important; }
 video::-webkit-media-controls-enclosure  { display: none !important; }
