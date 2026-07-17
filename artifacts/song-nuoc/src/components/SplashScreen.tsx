@@ -59,23 +59,6 @@ export function SplashScreen({ onEnter, audioRef }: SplashScreenProps) {
           exit={{ opacity: 0 }}
           transition={{ duration: 2.4, ease: "easeInOut" }}
         >
-          {/* Background photo */}
-          <img
-            src="/bg.jpg"
-            alt=""
-            aria-hidden="true"
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              objectPosition: "center",
-              pointerEvents: "none",
-              userSelect: "none",
-            }}
-            draggable={false}
-          />
 
           {/* Dark overlay */}
           <div

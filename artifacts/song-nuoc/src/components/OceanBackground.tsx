@@ -328,23 +328,6 @@ export function OceanBackground() {
         />
       </video>
 
-      {/* Fallback bg image */}
-      <img
-        src="/bg.jpg"
-        alt=""
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          zIndex: -1,
-          pointerEvents: "none",
-          userSelect: "none",
-        }}
-        draggable={false}
-      />
 
       {/* Primary cinematic overlay */}
       <div
