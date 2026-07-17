@@ -20,11 +20,11 @@ export function StatsBar({ shelves }: StatsBarProps) {
       transition={{ delay: 0.5, duration: 1.2 }}
       className="flex items-center justify-center gap-6 sm:gap-8 py-3 px-6 sm:px-8 mx-auto mb-10 w-fit rounded-full"
       style={{
-        background: "rgba(8,18,42,0.22)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        border: "1px solid rgba(197,168,255,0.12)",
-        boxShadow: "0 2px 24px rgba(0,10,40,0.3), 0 0 0 1px rgba(78,205,196,0.06)",
+        background: "rgba(255,255,255,0.03)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        border: "1px solid rgba(255,255,255,0.15)",
+        boxShadow: "0 2px 16px rgba(0,0,0,0.2)",
         maxWidth: "calc(100vw - 2rem)",
       }}
     >
@@ -43,8 +43,9 @@ export function StatsBar({ shelves }: StatsBarProps) {
           fontFamily: "'Cormorant Garamond', Georgia, serif",
           fontWeight: 500, fontSize: "0.7rem",
           letterSpacing: "0.18em", textTransform: "uppercase",
-          color: "rgba(197,168,255,0.6)",
+          color: "rgba(197,168,255,0.9)",
           whiteSpace: "nowrap",
+          textShadow: "0 2px 4px rgba(0,0,0,0.8)",
         }}>
           Tác phẩm
         </span>
@@ -79,10 +80,11 @@ export function StatsBar({ shelves }: StatsBarProps) {
           fontFamily: "'Cormorant Garamond', Georgia, serif",
           fontWeight: 500, fontSize: "0.7rem",
           letterSpacing: "0.18em", textTransform: "uppercase",
-          color: "rgba(197,168,255,0.6)",
+          color: "rgba(197,168,255,0.9)",
           whiteSpace: "nowrap",
+          textShadow: "0 2px 4px rgba(0,0,0,0.8)",
         }}>
-          Yêu thích
+          🪼
         </span>
         <motion.span
           style={{
@@ -115,8 +117,9 @@ export function StatsBar({ shelves }: StatsBarProps) {
           fontFamily: "'Cormorant Garamond', Georgia, serif",
           fontWeight: 500, fontSize: "0.7rem",
           letterSpacing: "0.18em", textTransform: "uppercase",
-          color: "rgba(197,168,255,0.6)",
+          color: "rgba(197,168,255,0.9)",
           whiteSpace: "nowrap",
+          textShadow: "0 2px 4px rgba(0,0,0,0.8)",
         }}>
           Kệ
         </span>

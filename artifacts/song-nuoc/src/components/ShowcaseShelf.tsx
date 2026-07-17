@@ -49,10 +49,10 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
         placeholder="tìm tác phẩm, kệ..."
         style={{
           width: "100%",
-          background: "rgba(255,255,255,0.08)",
-          backdropFilter: "blur(4px)",
-          WebkitBackdropFilter: "blur(4px)",
-          border: "1px solid rgba(255,255,255,0.2)",
+          background: "rgba(255,255,255,0.03)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          border: "1px solid rgba(255,255,255,0.15)",
           borderRadius: "10px",
           padding: "11px 20px 11px 38px",
           color: "rgba(240,244,255,0.92)",
@@ -164,9 +164,10 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
     <div
       className="group relative overflow-hidden"
       style={{
-        flex: weight,
         minHeight: 130,
-        borderRight: isLast ? "none" : "1px solid rgba(255,255,255,0.09)",
+        background: "rgba(255,255,255,0.03)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
       }}
     >
       {/* Hover glow */}
@@ -202,7 +203,7 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
             fontWeight: 700,
             fontSize: "clamp(1rem, 1.6vw, 1.2rem)",
             color: "rgba(255,255,255,0.97)",
-            textShadow: `0 0 18px ${accent.glow}0.45), 0 1px 4px rgba(0,0,0,0.5)`,
+            textShadow: `0 2px 4px rgba(0,0,0,0.8), 0 0 18px ${accent.glow}0.45)`,
             letterSpacing: "0.015em",
             wordBreak: "break-word",
           }}
@@ -218,9 +219,10 @@ function ArtworkCell({ artwork, weight, accent, onLike, isLast }: ArtworkCellPro
               fontStyle: "italic",
               fontWeight: 500,
               fontSize: "clamp(0.76rem, 1.1vw, 0.86rem)",
-              color: "rgba(197,168,255,0.65)",
+              color: "rgba(197,168,255,0.85)",
               lineHeight: 1.55,
               wordBreak: "break-word",
+              textShadow: "0 2px 4px rgba(0,0,0,0.8)",
             }}
           >
             {artwork.description}
@@ -310,9 +312,6 @@ function ShelfSection({ shelf, shelfIndex, onLike, highlightIds }: ShelfSectionP
 
   if (!visible.length) return null;
 
-  const rows = groupIntoRows(visible);
-  let counter = 0;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -339,8 +338,9 @@ function ShelfSection({ shelf, shelfIndex, onLike, highlightIds }: ShelfSectionP
             fontStyle: "italic",
             fontSize: "clamp(0.85rem, 1.5vw, 1rem)",
             letterSpacing: "0.14em",
-            color: "rgba(197,168,255,0.65)",
+            color: "rgba(197,168,255,0.85)",
             textTransform: "uppercase",
+            textShadow: "0 2px 4px rgba(0,0,0,0.8)",
           }}
         >
           {shelf.shelfName}
@@ -351,56 +351,31 @@ function ShelfSection({ shelf, shelfIndex, onLike, highlightIds }: ShelfSectionP
         />
       </div>
 
-      {/* Artwork rows */}
+      {/* Artwork grid */}
       <div
         className="overflow-hidden"
         style={{
           width: "100%",
-          background: "rgba(255,255,255,0.08)",
-          backdropFilter: "blur(4px)",
-          WebkitBackdropFilter: "blur(4px)",
-          border: "1px solid rgba(255,255,255,0.2)",
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: "1px",
+          background: "rgba(255,255,255,0.03)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          border: "1px solid rgba(255,255,255,0.15)",
           borderRadius: "10px",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
         }}
       >
-        {rows.map((row, ri) => {
-          const base = counter;
-          counter += row.artworks.length;
-          return (
-            <div
-              key={ri}
-              className="relative flex"
-              style={{
-                borderBottom: ri < rows.length - 1 ? "1px solid rgba(255,255,255,0.12)" : "none",
-              }}
-            >
-              {/* Shelf glow stripe */}
-              <div
-                className="absolute bottom-0 left-0 right-0 pointer-events-none"
-                style={{
-                  height: "2px",
-                  background: `linear-gradient(to right, transparent 5%, ${NEON[(shelfIndex) % NEON.length].border}0.2) 30%, ${NEON[(shelfIndex) % NEON.length].border}0.35) 50%, ${NEON[(shelfIndex) % NEON.length].border}0.2) 70%, transparent 95%)`,
-                  zIndex: 5,
-                }}
-              />
-              {row.artworks.map((art, ci) => (
-                <ArtworkCell
-                  key={art.id}
-                  artwork={art}
-                  weight={row.weights[ci] ?? 1}
-                  accent={NEON[(base + ci) % NEON.length]}
-                  onLike={() => onLike(art.id)}
-                  isLast={ci === row.artworks.length - 1}
-                />
-              ))}
-              {/* Fill empty slots */}
-              {row.weights.slice(row.artworks.length).map((w, i) => (
-                <div key={`e${i}`} style={{ flex: w, minHeight: 130 }} />
-              ))}
-            </div>
-          );
-        })}
+        {visible.map((art, idx) => (
+          <ArtworkCell
+            key={art.id}
+            artwork={art}
+            weight={1}
+            accent={NEON[idx % NEON.length]}
+            onLike={() => onLike(art.id)}
+            isLast={true}
+          />
+        ))}
       </div>
     </motion.div>
   );
@@ -415,20 +390,22 @@ function SkeletonShelf() {
         <div className="h-3 rounded-sm" style={{ width: 120, background: "rgba(197,168,255,0.1)" }} />
       </div>
       {[0].map((ri) => (
-        <div key={ri} className="flex" style={{
+        <div key={ri} style={{
           width: "100%",
-          background: "rgba(255,255,255,0.08)",
-          backdropFilter: "blur(4px)",
-          WebkitBackdropFilter: "blur(4px)",
-          border: "1px solid rgba(255,255,255,0.2)",
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: "1px",
+          background: "rgba(255,255,255,0.03)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          border: "1px solid rgba(255,255,255,0.15)",
           borderRadius: "10px",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
           overflow: "hidden",
         }}>
-          {[7, 5].map((w, ci) => (
+          {[0, 1].map((ci) => (
             <motion.div
               key={ci}
-              style={{ flex: w, minHeight: 130, padding: "22px 18px 18px", borderRight: ci === 0 ? "1px solid rgba(255,255,255,0.08)" : "none" }}
+              style={{ minHeight: 130, padding: "22px 18px 18px", background: "rgba(255,255,255,0.03)" }}
               animate={{ opacity: [0.25, 0.5, 0.25] }}
               transition={{ duration: 2, repeat: Infinity, delay: ci * 0.3 }}
             >
@@ -572,19 +549,19 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
             style={{
               minHeight: 80,
               width: "100%",
-              background: "rgba(255,255,255,0.08)",
-              backdropFilter: "blur(4px)",
-              WebkitBackdropFilter: "blur(4px)",
-              border: "1px solid rgba(255,255,255,0.2)",
+              background: "rgba(255,255,255,0.03)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              border: "1px solid rgba(255,255,255,0.15)",
               borderRadius: "10px",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
             }}
           >
             <p style={{
               fontFamily: "'Cormorant Garamond', Georgia, serif",
               fontStyle: "italic", fontWeight: 500,
-              fontSize: "0.8rem", color: "rgba(197,168,255,0.45)",
+              fontSize: "0.8rem", color: "rgba(197,168,255,0.7)",
               letterSpacing: "0.08em",
+              textShadow: "0 2px 4px rgba(0,0,0,0.8)",
             }}>
               kệ trống
             </p>
