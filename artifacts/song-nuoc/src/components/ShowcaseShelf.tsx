@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef, memo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import type { Shelf, Artwork } from "@/hooks/useShelvesStore";
@@ -102,7 +103,7 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
     };
   }, [onClose]);
 
-  return (
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -145,7 +146,8 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
         {/* Fade cuối */}
         <div className="plot-fade-bottom" />
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 }
 
