@@ -234,22 +234,32 @@
    SHOWCASE SHELF — BASE CLASSES (overridden by mobile below)
    ============================================================ */
 
-/* Search bar + bubble button row */
+/* Search bar + bubble button row — always one single row */
 .shelf-toolbar {
   display: flex;
-  gap: 10px;
+  flex-direction: row;
+  justify-content: center;
   align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
 }
 
-/* Search bar wrapper — constrained to ~65% so it doesn't dominate */
-.shelf-search-wrap {
-  flex: 1 1 0;
+/* Bubble button wrapper — equal flex share with search bar */
+.shelf-btn-wrap {
+  flex: 1;
   min-width: 0;
-  max-width: 65%;
+  position: relative;
 }
 
-/* Bubble menu button — desktop sizing lives here so media query can override */
+/* Search bar wrapper — equal flex share with button */
+.shelf-search-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Bubble menu button — fills its flex wrapper so width matches search bar */
 .shelf-bubble-btn {
+  width: 100%;
   padding: 12px 28px;
   font-size: 18px;
   letter-spacing: 0.06em;
@@ -292,18 +302,6 @@
   .ocean-scroll-container {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-  }
-
-  /* Toolbar can wrap if the bubble button is wider than the
-     remaining space beside the search bar.                    */
-  .shelf-toolbar {
-    flex-wrap: wrap;
-  }
-
-  /* On mobile the search bar takes its own full-width row     */
-  .shelf-search-wrap {
-    max-width: 100%;
-    flex: 1 1 100%;
   }
 
   /* Smaller bubble button so it fits beside the search bar    */

@@ -472,7 +472,7 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
 
         {/* Large Bubble Menu Button — LEFT */}
         {!isEmpty && (
-          <div ref={menuWrapRef} style={{ position: "relative", flexShrink: 0 }}>
+          <div ref={menuWrapRef} className="shelf-btn-wrap">
             <motion.button
               onClick={() => setDropOpen((o) => !o)}
               whileTap={{ scale: 0.94 }}
