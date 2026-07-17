@@ -283,7 +283,9 @@ const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: Artwo
     color: "rgba(255,255,255,0.85)",
     touchAction: "manipulation",
     WebkitTapHighlightColor: "transparent",
-    transition: "background 0.18s, border-color 0.18s",
+    transition: "transform 0.18s, opacity 0.18s",
+    transform: "translateZ(0)",
+    backfaceVisibility: "hidden" as const,
     flexShrink: 0,
   };
 
@@ -295,7 +297,9 @@ const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: Artwo
           background: "transparent",
           border: "1px solid rgba(255,255,255,0.1)",
           borderRadius: "20px",
-          transition: "border-color 0.3s",
+          transition: "transform 0.3s, opacity 0.3s",
+          transform: "translateZ(0)",
+          backfaceVisibility: "hidden" as const,
         }}
         onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = `${accent.border}0.25)`; }}
         onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.1)"; }}
@@ -513,7 +517,9 @@ function ShelfDropdown({ shelves, currentIndex, onSelect, onClose }: ShelfDropdo
                 cursor: "pointer",
                 textAlign: "left",
                 width: "100%",
-                transition: "background 0.2s, border-color 0.2s, box-shadow 0.2s",
+                transition: "transform 0.2s, opacity 0.2s",
+                transform: "translateZ(0)",
+                backfaceVisibility: "hidden" as const,
               }}
             >
               {/* Active dot */}
@@ -522,7 +528,7 @@ function ShelfDropdown({ shelves, currentIndex, onSelect, onClose }: ShelfDropdo
                   width: 5, height: 5, borderRadius: "50%", flexShrink: 0,
                   background: isActive ? "rgba(78,205,196,0.9)" : `${NEON[idx % NEON.length].border}0.45)`,
                   boxShadow: isActive ? "0 0 8px rgba(78,205,196,0.7)" : "none",
-                  transition: "all 0.2s",
+                  transition: "transform 0.2s, opacity 0.2s",
                 }}
                 animate={isActive ? { opacity: [0.5, 1, 0.5] } : {}}
                 transition={{ duration: 2, repeat: Infinity }}
@@ -537,7 +543,7 @@ function ShelfDropdown({ shelves, currentIndex, onSelect, onClose }: ShelfDropdo
                 color: "#ffffff",
                 textShadow: "1px 1px 3px black, 0 0 12px rgba(0,0,0,0.8)",
                 flex: 1,
-                transition: "all 0.2s",
+                transition: "transform 0.2s, opacity 0.2s",
               }}>
                 {shelf.shelfName}
               </span>
@@ -677,8 +683,10 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
                 boxShadow: "0 0 20px rgba(255,255,255,0.2)",
                 textShadow: TEXT_SHADOW,
                 whiteSpace: "nowrap",
-                transition: "background 0.2s",
+                transition: "transform 0.2s, opacity 0.2s",
                 touchAction: "manipulation",
+                transform: "translateZ(0)",
+                backfaceVisibility: "hidden" as const,
               }}
               aria-label="Danh mục Kệ"
               aria-expanded={dropOpen}
@@ -864,7 +872,7 @@ export function ShowcaseShelf({ shelves, search, onSearchChange, onLike }: Showc
                     fontSize: "0.78rem", cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     textShadow: idx === safeIdx ? TEXT_SHADOW : "none",
-                    transition: "all 0.2s",
+                    transition: "transform 0.2s, opacity 0.2s",
                   }}
                   aria-label={`Kệ ${idx + 1}`}
                   aria-current={idx === safeIdx ? "page" : undefined}

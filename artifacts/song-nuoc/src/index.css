@@ -212,6 +212,9 @@
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,0.15);
   box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+  /* GPU layer — bắt buộc cho backdrop-filter trên mobile */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* ============================================================
@@ -280,6 +283,10 @@
   padding-right: 4px;
   scrollbar-width: thin;
   scrollbar-color: rgba(197,168,255,0.2) transparent;
+  /* Khóa vùng paint — cuộn trong không kéo theo layout ngoài */
+  contain: paint layout;
+  /* Chỉ render những card đang trong viewport */
+  content-visibility: auto;
 }
 
 /* Pagination row */
@@ -481,9 +488,13 @@
   font-size: 0.875rem;
   text-decoration: none;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  /* Chỉ animate transform + opacity — GPU composited */
+  transition: transform 0.3s ease, opacity 0.3s ease;
   -webkit-tap-highlight-color: transparent;
   line-height: 1.5;
+  /* GPU layer */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 .page-link-btn:hover,
 .page-link-btn:focus-visible {
@@ -492,6 +503,7 @@
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
   color: #ffffff;
   text-decoration: none;
+  transform: translateZ(0) scale(1.04);
 }
 
 /* ── PlotModal — lồng kính bóng nước (dùng class để !important hoạt động) ── */
@@ -507,12 +519,19 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
               inset 0 0 15px rgba(255, 255, 255, 0.2) !important;
   border-radius: 24px !important;
+  /* GPU layer riêng — chuẩn bị trước khi animate */
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  perspective: 1000px !important;
+  will-change: transform, backdrop-filter !important;
 }
 
 /* Vùng text cuộn — màu trắng mặc định, span màu admin vẫn override được */
 .plot-modal-body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  /* Không render text ngoài vùng nhìn thấy — tối ưu máy yếu */
+  contain: paint layout;
 }
 .plot-modal-body > div {
   color: rgba(255, 255, 255, 0.9);
@@ -526,6 +545,13 @@
 /* Cho phép span màu của admin hiển thị đúng — KHÔNG ép màu lên <span> */
 .plot-modal-body > div span[style*="color"] {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Video nền — GPU layer riêng, không cản trở render kính bên trên ── */
+video {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 
 /* ── Ẩn hoàn toàn controls của video nền trên mọi trình duyệt (iOS/Android) ── */
