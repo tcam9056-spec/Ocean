@@ -131,12 +131,12 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
           maxHeight: "80vh",
           display: "flex",
           flexDirection: "column",
-          background: "rgba(8,16,38,0.88)",
-          backdropFilter: "blur(28px)",
-          WebkitBackdropFilter: "blur(28px)",
-          border: `1px solid ${accent.border}0.28)`,
-          borderRadius: "24px",
-          boxShadow: `0 32px 80px rgba(0,8,32,0.7), 0 0 40px ${accent.glow}0.1), inset 0 1px 0 rgba(240,244,255,0.07)`,
+          background: "rgba(10,20,40,0.6)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          border: `1px solid ${accent.border}0.22)`,
+          borderRadius: "32px",
+          boxShadow: `0 0 15px rgba(255,255,255,0.1), 0 32px 80px rgba(0,8,32,0.5), inset 0 1px 0 rgba(240,244,255,0.06)`,
         }}
       >
         {/* Header */}
@@ -202,22 +202,24 @@ function PlotModal({ title, plot, accent, onClose }: PlotModalProps) {
         <div style={{
           flex: 1,
           overflowY: "auto",
-          padding: "16px 24px 24px",
+          padding: "20px 28px 32px",
         }}>
-          <p style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontWeight: 400,
-            fontSize: "0.95rem",
-            color: "rgba(220,210,255,0.88)",
-            lineHeight: 1.85,
-            margin: 0,
-            /* Preserve every whitespace and newline exactly as entered */
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            textShadow: TEXT_SHADOW,
-          }}>
-            {plot || <em style={{ color: "rgba(197,168,255,0.35)" }}>Chưa có cốt truyện.</em>}
-          </p>
+          <div
+            dangerouslySetInnerHTML={{
+              __html: plot
+                ? plot
+                : '<em style="color:rgba(197,168,255,0.35)">Chưa có cốt truyện.</em>',
+            }}
+            style={{
+              fontFamily: "'Cormorant Garamond', Georgia, serif",
+              fontWeight: 400,
+              fontSize: "0.97rem",
+              color: "rgba(225,215,255,0.9)",
+              lineHeight: 1.8,
+              wordBreak: "break-word",
+              textShadow: TEXT_SHADOW,
+            }}
+          />
         </div>
       </motion.div>
     </motion.div>
@@ -235,9 +237,6 @@ const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: Artwo
   const [liking, setLiking]  = useState(false);
   const [burst, setBurst]    = useState<{ id: number; angle: number; color: string; dist: number; size: number }[]>([]);
   const [plotOpen, setPlotOpen] = useState(false);
-
-  let hostname = "";
-  try { hostname = new URL(artwork.link).hostname; } catch { hostname = artwork.link; }
 
   const isValidUrl = (() => { try { new URL(artwork.link); return true; } catch { return false; } })();
 
@@ -283,17 +282,16 @@ const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: Artwo
   const miniBtnBase: React.CSSProperties = {
     fontFamily: "'Cormorant Garamond', Georgia, serif",
     fontWeight: 400,
-    fontSize: "0.68rem",
+    fontSize: "0.7rem",
     letterSpacing: "0.1em",
-    padding: "3px 10px",
+    padding: "4px 14px",
     borderRadius: "20px",
     cursor: "pointer",
-    background: "rgba(255,255,255,0.04)",
+    background: "rgba(255,255,255,0.1)",
     backdropFilter: "blur(8px)",
     WebkitBackdropFilter: "blur(8px)",
-    border: `1px solid ${accent.border}0.22)`,
-    color: `${accent.glow}0.72)`,
-    textShadow: TEXT_SHADOW,
+    border: "1px solid rgba(255,255,255,0.3)",
+    color: "rgba(255,255,255,0.85)",
     touchAction: "manipulation",
     WebkitTapHighlightColor: "transparent",
     transition: "background 0.18s, border-color 0.18s",
@@ -360,38 +358,25 @@ const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: Artwo
             </p>
           )}
 
-          {/* ggai + plot buttons */}
-          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-            <button
-              onClick={handleGgai}
-              style={miniBtnBase}
-              onMouseEnter={(e) => { e.currentTarget.style.background = `${accent.glow}0.12)`; e.currentTarget.style.borderColor = `${accent.border}0.44)`; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor = `${accent.border}0.22)`; }}
-            >
-              ggai
-            </button>
-            <button
-              onClick={handlePlot}
-              style={miniBtnBase}
-              onMouseEnter={(e) => { e.currentTarget.style.background = `${accent.glow}0.12)`; e.currentTarget.style.borderColor = `${accent.border}0.44)`; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor = `${accent.border}0.22)`; }}
-            >
-              plot
-            </button>
-          </div>
-
           <div className="flex items-center justify-between gap-2 mt-auto pt-1">
-            <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              <div
-                className="rounded-full shrink-0"
-                style={{ width: 3, height: 3, background: `${accent.border}0.6)`, boxShadow: `0 0 4px ${accent.glow}0.4)` }}
-              />
-              <span
-                className="truncate"
-                style={{ color: "rgba(150,190,210,0.4)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "0.66rem", letterSpacing: "0.03em" }}
+            {/* ggai + plot — centered, replacing the old hostname row */}
+            <div style={{ display: "flex", gap: 8, flex: 1, justifyContent: "center" }}>
+              <button
+                onClick={handleGgai}
+                style={miniBtnBase}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.2)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
               >
-                {isValidUrl ? hostname : "link không hợp lệ"}
-              </span>
+                ggai
+              </button>
+              <button
+                onClick={handlePlot}
+                style={miniBtnBase}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.2)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
+              >
+                plot
+              </button>
             </div>
 
             {/* Like button */}

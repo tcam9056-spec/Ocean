@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import type { Shelf, Artwork } from "@/hooks/useShelvesStore";
+import Quill from "quill";
+import "quill/dist/quill.snow.css";
 
 /* ─── Types ───────────────────────────────────────────────────── */
 interface AdminPanelProps {
@@ -240,6 +242,46 @@ function LoginModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: ()
   );
 }
 
+/* ─── Rich Text Editor — Quill v2 wrapped for React 19 ───────── */
+function RichTextEditor({ value, onChange }: { value: string; onChange: (html: string) => void }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const quillRef     = useRef<Quill | null>(null);
+  const onChangeRef  = useRef(onChange);
+  onChangeRef.current = onChange;
+  /* capture initial value once; the editor is uncontrolled after mount */
+  const initHtml = useRef(value);
+
+  useEffect(() => {
+    if (!containerRef.current || quillRef.current) return;
+
+    const q = new Quill(containerRef.current, {
+      theme: "snow",
+      placeholder: "cốt truyện… (hỗ trợ in đậm, in nghiêng, đổi màu)",
+      modules: {
+        toolbar: [["bold", "italic"], [{ color: [] }], ["clean"]],
+      },
+    });
+
+    if (initHtml.current) q.root.innerHTML = initHtml.current;
+
+    q.on("text-change", () => {
+      onChangeRef.current(q.root.innerHTML);
+    });
+
+    quillRef.current = q;
+    return () => {
+      /* Quill has no destroy() — React removes the DOM on unmount */
+      quillRef.current = null;
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <div style={{ borderRadius: "10px", overflow: "hidden", marginTop: 2 }}>
+      <div ref={containerRef} />
+    </div>
+  );
+}
+
 /* ─── Artwork form ────────────────────────────────────────────── */
 interface ArtworkFormProps {
   shelfId: string;
@@ -289,19 +331,7 @@ function ArtworkForm({ initial, onSave, onCancel }: ArtworkFormProps) {
         onChange={(e) => setDesc(e.target.value)}
         placeholder="mô tả nhẹ nhàng..."
       />
-      <textarea
-        value={plot}
-        onChange={(e) => setPlot(e.target.value)}
-        placeholder="cốt truyện... (giữ nguyên dấu xuống dòng)"
-        style={{
-          ...inp,
-          resize: "vertical",
-          minHeight: 96,
-          padding: "9px 14px",
-          whiteSpace: "pre-wrap",
-          lineHeight: 1.6,
-        }}
-      />
+      <RichTextEditor value={plot} onChange={setPlot} />
       <Field
         type="url"
         value={link}

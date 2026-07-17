@@ -420,6 +420,49 @@
   }
 }
 
+/* ── Quill Rich Text Editor — dark ocean theme (Admin only) ──── */
+.ql-toolbar.ql-snow {
+  background: rgba(6, 12, 32, 0.9);
+  border: 1px solid rgba(197, 168, 255, 0.18) !important;
+  border-bottom: 1px solid rgba(197, 168, 255, 0.08) !important;
+  border-radius: 10px 10px 0 0;
+}
+.ql-container.ql-snow {
+  background: rgba(8, 18, 42, 0.7);
+  border: 1px solid rgba(197, 168, 255, 0.18) !important;
+  border-top: none !important;
+  border-radius: 0 0 10px 10px;
+  min-height: 96px;
+}
+.ql-editor {
+  min-height: 96px;
+  color: rgba(220, 210, 255, 0.9);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+.ql-editor.ql-blank::before {
+  color: rgba(150, 130, 200, 0.4);
+  font-style: italic;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+.ql-snow .ql-stroke { stroke: rgba(197, 168, 255, 0.65) !important; }
+.ql-snow .ql-fill   { fill:   rgba(197, 168, 255, 0.65) !important; }
+.ql-snow .ql-picker  { color: rgba(197, 168, 255, 0.65) !important; }
+.ql-snow .ql-picker-label::before { color: rgba(197, 168, 255, 0.65); }
+.ql-snow .ql-picker-options {
+  background: rgba(10, 18, 42, 0.97) !important;
+  border-color: rgba(78, 205, 196, 0.2) !important;
+  border-radius: 8px;
+}
+.ql-snow .ql-picker-item { color: rgba(220, 210, 255, 0.85); }
+.ql-snow button:hover .ql-stroke,
+.ql-snow .ql-picker-label:hover .ql-stroke { stroke: rgba(78, 205, 196, 0.95) !important; }
+.ql-snow button:hover .ql-fill,
+.ql-snow .ql-picker-label:hover .ql-fill   { fill:   rgba(78, 205, 196, 0.95) !important; }
+.ql-snow button.ql-active .ql-stroke { stroke: rgba(78, 205, 196, 1) !important; }
+.ql-snow button.ql-active .ql-fill   { fill:   rgba(78, 205, 196, 1) !important; }
+
 /* ── Ẩn hoàn toàn controls của video nền trên mọi trình duyệt (iOS/Android) ── */
 video::-webkit-media-controls             { display: none !important; }
 video::-webkit-media-controls-enclosure  { display: none !important; }
