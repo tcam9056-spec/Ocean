@@ -186,9 +186,8 @@ const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: Artwo
     onLike();
   };
 
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!isValidUrl) { e.preventDefault(); toast.error("Link không hợp lệ"); }
-  };
+  // handleLinkClick đã được xoá — thẻ <a> bao toàn bộ card đã bị thay bằng <div>.
+  // Việc mở link giờ chỉ xảy ra trong handleGgai khi bấm đúng nút "ggai".
 
   const handleGgai = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -247,13 +246,16 @@ const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: Artwo
           style={{ background: `linear-gradient(to top, ${accent.glow}0.08) 0%, transparent 70%)`, zIndex: 0 }}
         />
 
-        <a
-          href={isValidUrl ? artwork.link : undefined}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={handleLinkClick}
+        {/*
+          ── SỬA LỖI EVENT BUBBLING ──────────────────────────────────────
+          Trước: thẻ <a> bao toàn bộ nội dung card → click bất kỳ đâu
+                 (kể cả nút ggai/plot/like) đều mở link ra ngoài.
+          Sau:   đổi thành <div> không có hành vi điều hướng.
+                 Chỉ nút "ggai" mới mở link (qua handleGgai → window.open).
+          ──────────────────────────────────────────────────────────────── */}
+        <div
           className="block p-4"
-          style={{ zIndex: 1, position: "relative", cursor: isValidUrl ? "pointer" : "default" }}
+          style={{ zIndex: 1, position: "relative", cursor: "default" }}
         >
           <h3
             className="leading-snug mb-1.5"
@@ -342,7 +344,7 @@ const ArtworkCell = memo(function ArtworkCell({ artwork, accent, onLike }: Artwo
               </motion.button>
             </div>
           </div>
-        </a>
+        </div>
       </div>
 
       {/* Plot modal — rendered outside the card to avoid stacking context issues */}
