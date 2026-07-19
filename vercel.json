@@ -1,9 +1,11 @@
 {
   "version": 2,
 
+  "framework": null,
+
   "installCommand": "pnpm install",
 
-  "buildCommand": "pnpm --filter @workspace/song-nuoc run build && pnpm --filter @workspace/db push",
+  "buildCommand": "pnpm --filter @workspace/song-nuoc run build",
 
   "outputDirectory": "artifacts/song-nuoc/dist/public",
 
