@@ -1,0 +1,13 @@
+{
+  "version": 2,
+
+  "installCommand": "pnpm install",
+
+  "buildCommand": "pnpm --filter @workspace/song-nuoc run build && pnpm --filter @workspace/db push",
+
+  "outputDirectory": "artifacts/song-nuoc/dist/public",
+
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index" }
+  ]
+}
