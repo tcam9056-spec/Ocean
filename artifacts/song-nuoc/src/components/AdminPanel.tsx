@@ -12,10 +12,10 @@ interface AdminPanelProps {
   shelves: Shelf[];
   onCreateShelf: (name: string) => Promise<string>;
   onRenameShelf: (id: string, name: string) => void;
-  onDeleteShelf: (id: string) => void;
+  onDeleteShelf: (id: string) => Promise<void>;
   onAddArtwork: (shelfId: string, data: { title: string; description: string; plot: string; link: string }) => void;
   onUpdateArtwork: (shelfId: string, artId: string, data: { title: string; description: string; plot: string; link: string }) => void;
-  onDeleteArtwork: (shelfId: string, artId: string) => void;
+  onDeleteArtwork: (shelfId: string, artId: string) => Promise<void>;
 }
 
 const ADMIN_EMAIL = "tcam9056@gmail.com";
@@ -381,14 +381,96 @@ interface ArtworkItemProps {
   artwork: Artwork;
   shelfId: string;
   onUpdate: (data: { title: string; description: string; plot: string; link: string }) => void;
-  onDelete: () => void;
+  onDelete: () => Promise<void>;
 }
 
 function ArtworkItem({ artwork, onUpdate, onDelete }: ArtworkItemProps) {
   const [editing, setEditing] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  // Prevents double-click during animation
+  const dyingRef = useRef(false);
 
   let hostname = "";
   try { hostname = new URL(artwork.link).hostname; } catch { hostname = artwork.link; }
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (dyingRef.current) return;
+    if (!confirm(`Xoá tác phẩm "${artwork.title}"?`)) return;
+
+    dyingRef.current = true;
+    const el = wrapperRef.current;
+
+    // ── Phase 1: Immediate visual feedback — fade + disable ────────────────
+    if (el) {
+      el.style.pointerEvents = "none";
+      el.style.transition = "opacity 0.12s ease";
+      el.style.opacity = "0.38";
+    }
+
+    // ── Fire API immediately in background ─────────────────────────────────
+    const apiPromise = onDelete(); // Returns Promise<void>, runs in background
+
+    // ── Phase 2: Collapse height + padding (after opacity settles) ─────────
+    setTimeout(() => {
+      if (!el) return;
+      const h = el.getBoundingClientRect().height;
+      el.dataset.originalH = String(h);
+      el.style.height = `${h}px`;
+      el.style.overflow = "hidden";
+      el.style.transition = [
+        "opacity 0.15s ease",
+        "height 0.28s cubic-bezier(0.4,0,0.2,1) 0.06s",
+        "padding-top 0.28s cubic-bezier(0.4,0,0.2,1) 0.06s",
+        "padding-bottom 0.28s cubic-bezier(0.4,0,0.2,1) 0.06s",
+        "border-bottom-width 0.28s cubic-bezier(0.4,0,0.2,1) 0.06s",
+      ].join(", ");
+      requestAnimationFrame(() => {
+        if (!el) return;
+        el.style.opacity = "0";
+        el.style.height = "0";
+        el.style.paddingTop = "0";
+        el.style.paddingBottom = "0";
+        el.style.borderBottomWidth = "0";
+      });
+    }, 65);
+
+    // ── Handle API result ──────────────────────────────────────────────────
+    apiPromise
+      .then(() => {
+        // Success — animation already done, invalidate() in store will
+        // re-fetch and React will silently unmount this (already invisible) element.
+        toast.success("Tác phẩm đã tan vào biển cả");
+      })
+      .catch(() => {
+        // Failure — reverse animation, restore element, show error
+        dyingRef.current = false;
+        if (!el) return;
+        const h = el.dataset.originalH || "60";
+        el.style.transition = [
+          "opacity 0.25s ease",
+          "height 0.25s ease",
+          "padding-top 0.25s ease",
+          "padding-bottom 0.25s ease",
+          "border-bottom-width 0.25s ease",
+        ].join(", ");
+        el.style.opacity = "1";
+        el.style.height = `${h}px`;
+        el.style.paddingTop = "";
+        el.style.paddingBottom = "";
+        el.style.borderBottomWidth = "";
+        el.style.pointerEvents = "";
+        // Clean up explicit height after rollback animation completes
+        setTimeout(() => {
+          if (el && !dyingRef.current) {
+            el.style.height = "";
+            el.style.overflow = "";
+            el.style.transition = "";
+          }
+        }, 280);
+        toast.error("Không thể xoá tác phẩm — vui lòng thử lại");
+      });
+  };
 
   if (editing) {
     return (
@@ -403,6 +485,7 @@ function ArtworkItem({ artwork, onUpdate, onDelete }: ArtworkItemProps) {
 
   return (
     <div
+      ref={wrapperRef}
       style={{
         display: "flex",
         alignItems: "flex-start",
@@ -452,16 +535,7 @@ function ArtworkItem({ artwork, onUpdate, onDelete }: ArtworkItemProps) {
       </div>
       <div style={{ display: "flex", gap: 6, flexShrink: 0, paddingTop: 2 }}>
         <IconBtn onClick={(e) => { e.preventDefault(); setEditing(true); }} title="Sửa">✎</IconBtn>
-        <IconBtn
-          onClick={(e) => {
-            e.preventDefault();
-            if (confirm(`Xoá tác phẩm "${artwork.title}"?`)) onDelete();
-          }}
-          title="Xoá"
-          danger
-        >
-          🗑
-        </IconBtn>
+        <IconBtn onClick={handleDelete} title="Xoá" danger>🗑</IconBtn>
       </div>
     </div>
   );
@@ -474,7 +548,7 @@ interface ShelfDetailProps {
   onRename: (name: string) => void;
   onAdd: (data: { title: string; description: string; plot: string; link: string }) => void;
   onUpdate: (artId: string, data: { title: string; description: string; plot: string; link: string }) => void;
-  onDelete: (artId: string) => void;
+  onDelete: (artId: string) => Promise<void>;
 }
 
 function ShelfDetail({ shelf, onBack, onRename, onAdd, onUpdate, onDelete }: ShelfDetailProps) {
@@ -616,7 +690,7 @@ function ShelfDetail({ shelf, onBack, onRename, onAdd, onUpdate, onDelete }: She
               artwork={art}
               shelfId={shelf.id}
               onUpdate={(data) => { onUpdate(art.id, data); toast.success("Đã cập nhật tác phẩm"); }}
-              onDelete={() => { onDelete(art.id); toast.success("Tác phẩm đã tan vào biển cả"); }}
+              onDelete={() => onDelete(art.id)}
             />
           ))}
         </div>
@@ -630,7 +704,7 @@ interface ShelfListProps {
   shelves: Shelf[];
   onSelectShelf: (id: string) => void;
   onCreateShelf: (name: string) => Promise<string>;
-  onDeleteShelf: (id: string) => void;
+  onDeleteShelf: (id: string) => Promise<void>;
   onRenameShelf: (id: string, name: string) => void;
 }
 
@@ -640,6 +714,73 @@ function ShelfList({ shelves, onSelectShelf, onCreateShelf, onDeleteShelf, onRen
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameVal, setRenameVal] = useState("");
+
+  // Refs for per-shelf optimistic delete animation (no re-render needed)
+  const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const dyingRows = useRef<Set<string>>(new Set());
+
+  const handleDeleteShelf = (shelfId: string, shelfName: string) => {
+    if (dyingRows.current.has(shelfId)) return;
+    if (!confirm(`Xoá kệ "${shelfName}" và toàn bộ tác phẩm?`)) return;
+
+    dyingRows.current.add(shelfId);
+    const el = rowRefs.current.get(shelfId);
+
+    // Phase 1: Immediate feedback — fade + disable
+    if (el) {
+      el.style.pointerEvents = "none";
+      el.style.transition = "opacity 0.12s ease";
+      el.style.opacity = "0.38";
+    }
+
+    // Phase 2: Collapse height after opacity settles
+    setTimeout(() => {
+      if (!el) return;
+      const h = el.getBoundingClientRect().height;
+      el.dataset.originalH = String(h);
+      el.style.height = `${h}px`;
+      el.style.overflow = "hidden";
+      el.style.transition = [
+        "opacity 0.15s ease",
+        "height 0.28s cubic-bezier(0.4,0,0.2,1) 0.06s",
+        "margin-bottom 0.28s cubic-bezier(0.4,0,0.2,1) 0.06s",
+      ].join(", ");
+      requestAnimationFrame(() => {
+        if (!el) return;
+        el.style.opacity = "0";
+        el.style.height = "0";
+        el.style.marginBottom = "0";
+      });
+    }, 65);
+
+    // Background API call
+    onDeleteShelf(shelfId)
+      .then(() => toast.success("Kệ đã được xoá ✦"))
+      .catch(() => {
+        dyingRows.current.delete(shelfId);
+        if (!el) return;
+        // Reverse animation — restore to original height
+        const h = el.dataset.originalH || "60";
+        el.style.transition = [
+          "opacity 0.25s ease",
+          "height 0.25s ease",
+          "margin-bottom 0.25s ease",
+        ].join(", ");
+        el.style.opacity = "1";
+        el.style.height = `${h}px`;
+        el.style.marginBottom = "";
+        el.style.pointerEvents = "";
+        // Clean up explicit height after rollback animation
+        setTimeout(() => {
+          if (el && !dyingRows.current.has(shelfId)) {
+            el.style.height = "";
+            el.style.overflow = "";
+            el.style.transition = "";
+          }
+        }, 280);
+        toast.error("Không thể xoá kệ — vui lòng thử lại");
+      });
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -777,84 +918,87 @@ function ShelfList({ shelves, onSelectShelf, onCreateShelf, onDeleteShelf, onRen
         {/* Shelf list */}
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {shelves.map((shelf, i) => (
-            <motion.div
+            /* Outer div: animation target for optimistic delete collapse */
+            <div
               key={shelf.id}
-              initial={{ opacity: 0, x: 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: "12px",
-                overflow: "hidden",
+              ref={(el) => {
+                if (el) rowRefs.current.set(shelf.id, el);
+                else rowRefs.current.delete(shelf.id);
               }}
             >
-              {renamingId === shelf.id ? (
-                <form
-                  onSubmit={(e) => handleRename(e, shelf.id)}
-                  style={{ display: "flex", gap: 8, padding: "10px 12px" }}
-                >
-                  <Field
-                    type="text"
-                    value={renameVal}
-                    onChange={(e) => setRenameVal(e.target.value)}
-                    autoFocus
-                    style={{ flex: 1, fontSize: "0.88rem" }}
-                    onBlur={() => setRenamingId(null)}
-                  />
-                  <button type="submit" style={{
-                    background: "none", border: "none",
-                    color: "rgba(78,205,196,0.8)", cursor: "pointer", fontSize: "16px", touchAction: "manipulation",
-                  }}>✓</button>
-                </form>
-              ) : (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px" }}>
-                  <button
-                    onClick={() => onSelectShelf(shelf.id)}
-                    style={{
-                      flex: 1, background: "none", border: "none",
-                      textAlign: "left", cursor: "pointer",
-                      touchAction: "manipulation",
-                      minWidth: 0,
-                    }}
+              <motion.div
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.05 }}
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                }}
+              >
+                {renamingId === shelf.id ? (
+                  <form
+                    onSubmit={(e) => handleRename(e, shelf.id)}
+                    style={{ display: "flex", gap: 8, padding: "10px 12px" }}
                   >
-                    <div style={{
-                      fontFamily: "'Cormorant Garamond', Georgia, serif",
-                      fontWeight: 300, fontSize: "0.92rem",
-                      color: "rgba(240,244,255,0.8)",
-                      letterSpacing: "0.03em",
-                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                    }}>
-                      {shelf.shelfName}
-                    </div>
-                    <div style={{
-                      fontFamily: "'Cormorant Garamond', Georgia, serif",
-                      fontStyle: "italic", fontSize: "0.7rem",
-                      color: "rgba(197,168,255,0.35)",
-                      marginTop: 1,
-                    }}>
-                      {shelf.artworks.length} tác phẩm →
-                    </div>
-                  </button>
-                  <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
-                    <IconBtn
-                      onClick={() => { setRenameVal(shelf.shelfName); setRenamingId(shelf.id); }}
-                      title="Đổi tên"
-                    >✎</IconBtn>
-                    <IconBtn
-                      onClick={() => {
-                        if (confirm(`Xoá kệ "${shelf.shelfName}" và toàn bộ tác phẩm?`)) {
-                          onDeleteShelf(shelf.id);
-                          toast.success("Kệ đã được xoá");
-                        }
+                    <Field
+                      type="text"
+                      value={renameVal}
+                      onChange={(e) => setRenameVal(e.target.value)}
+                      autoFocus
+                      style={{ flex: 1, fontSize: "0.88rem" }}
+                      onBlur={() => setRenamingId(null)}
+                    />
+                    <button type="submit" style={{
+                      background: "none", border: "none",
+                      color: "rgba(78,205,196,0.8)", cursor: "pointer", fontSize: "16px", touchAction: "manipulation",
+                    }}>✓</button>
+                  </form>
+                ) : (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px" }}>
+                    <button
+                      onClick={() => onSelectShelf(shelf.id)}
+                      style={{
+                        flex: 1, background: "none", border: "none",
+                        textAlign: "left", cursor: "pointer",
+                        touchAction: "manipulation",
+                        minWidth: 0,
                       }}
-                      title="Xoá kệ"
-                      danger
-                    >🗑</IconBtn>
+                    >
+                      <div style={{
+                        fontFamily: "'Cormorant Garamond', Georgia, serif",
+                        fontWeight: 300, fontSize: "0.92rem",
+                        color: "rgba(240,244,255,0.8)",
+                        letterSpacing: "0.03em",
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                      }}>
+                        {shelf.shelfName}
+                      </div>
+                      <div style={{
+                        fontFamily: "'Cormorant Garamond', Georgia, serif",
+                        fontStyle: "italic", fontSize: "0.7rem",
+                        color: "rgba(197,168,255,0.35)",
+                        marginTop: 1,
+                      }}>
+                        {shelf.artworks.length} tác phẩm →
+                      </div>
+                    </button>
+                    <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
+                      <IconBtn
+                        onClick={() => { setRenameVal(shelf.shelfName); setRenamingId(shelf.id); }}
+                        title="Đổi tên"
+                      >✎</IconBtn>
+                      <IconBtn
+                        onClick={() => handleDeleteShelf(shelf.id, shelf.shelfName)}
+                        title="Xoá kệ"
+                        danger
+                      >🗑</IconBtn>
+                    </div>
                   </div>
-                </div>
-              )}
-            </motion.div>
+                )}
+              </motion.div>
+            </div>
           ))}
         </div>
       </div>

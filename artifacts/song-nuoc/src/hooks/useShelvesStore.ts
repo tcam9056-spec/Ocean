@@ -86,11 +86,9 @@ export function useShelvesStore() {
       .catch((err: unknown) => console.error("[renameShelf]", err));
   }, [invalidate]);
 
-  const deleteShelf = useCallback((id: string) => {
-    apiFetch(`/api/shelves/${id}`, { method: "DELETE" })
-      .then(invalidate)
-      .catch((err: unknown) => console.error("[deleteShelf]", err));
-  }, [invalidate]);
+  const deleteShelf = useCallback((id: string): Promise<void> =>
+    apiFetch(`/api/shelves/${id}`, { method: "DELETE" }).then(invalidate)
+  , [invalidate]);
 
   const addArtwork = useCallback(
     (shelfId: string, data: { title: string; description: string; plot: string; link: string }) => {
@@ -116,13 +114,9 @@ export function useShelvesStore() {
     [invalidate]
   );
 
-  const deleteArtwork = useCallback((shelfId: string, artId: string) => {
-    apiFetch(`/api/shelves/${shelfId}/artworks/${artId}`, {
-      method: "DELETE",
-    })
-      .then(invalidate)
-      .catch((err: unknown) => console.error("[deleteArtwork]", err));
-  }, [invalidate]);
+  const deleteArtwork = useCallback((shelfId: string, artId: string): Promise<void> =>
+    apiFetch(`/api/shelves/${shelfId}/artworks/${artId}`, { method: "DELETE" }).then(invalidate)
+  , [invalidate]);
 
   const likeArtwork = useCallback((shelfId: string, artId: string) => {
     // Optimistic update — no full refetch, UI responds instantly
